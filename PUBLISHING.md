@@ -10,8 +10,8 @@ Actualiza estos campos con tu información real:
 {
   "publisher": "yamid",  // Tu nombre de publicador en el Marketplace
   "author": {
-    "name": "Yamid",     // Tu nombre
-    "email": "tu-email@ejemplo.com"  // Tu email
+    "name": "Yamid Cueto Mazo",
+    "email": "yamidcuetomazo@hotmail.com"
   }
 }
 ```
