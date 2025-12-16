@@ -162,6 +162,11 @@ body {
     display: flex;
     justify-content: center;
     align-items: flex-start;
+    user-select: none; /* Prevent text selection while dragging */
+}
+
+.preview-container:active {
+    cursor: grabbing !important;
 }
 
 /* Report Canvas */

@@ -2,7 +2,7 @@
   "name": "jrxml-viewer",
   "displayName": "JRXML Viewer & Editor",
   "description": "Professional visual preview and interactive editor for JasperReports JRXML files. View report structure, inspect elements, export to HTML, and navigate your reports with ease.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "YamidCuetoMazo",
   "author": {
     "name": "Yamid Cueto Mazo",

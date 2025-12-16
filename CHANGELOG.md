@@ -2,6 +2,31 @@
 
 All notable changes to the "jrxml-viewer" extension will be documented in this file.
 
+## [0.1.2] - 2025-12-16
+
+### Added
+- Mouse wheel zoom with Ctrl/Cmd modifier
+- Pan/drag functionality - click and drag to move the view
+- Double-click to reset zoom and position
+- Improved cursor feedback (grab/grabbing cursors)
+- Smoother navigation experience
+
+### Enhanced
+- Better user interaction with mouse controls
+- Prevent text selection while dragging
+- Visual feedback during pan operations
+
+## [0.1.1] - 2025-12-16
+
+### Fixed
+- **Critical**: Include fast-xml-parser dependency in extension package
+- Extension now works when installed from Marketplace
+- Fixed "Cannot find module 'fast-xml-parser'" error
+
+### Changed
+- Updated .vscodeignore to include required dependencies (fast-xml-parser, strnum)
+- Package size increased to 211 KB (includes necessary dependencies)
+
 ## [0.1.0] - 2025-12-16
 
 ### Added

@@ -281,6 +281,73 @@
         }, { passive: false });
     }
 
+    // Pan/Drag functionality
+    let isPanning = false;
+    let startX = 0;
+    let startY = 0;
+    let scrollLeft = 0;
+    let scrollTop = 0;
+
+    if (previewContainer) {
+        // Mouse down - start panning
+        previewContainer.addEventListener('mousedown', (e) => {
+            // Only pan with left mouse button or middle button, not on clickable elements
+            if ((e.button === 0 || e.button === 1) && !e.target.closest('.element.clickable')) {
+                isPanning = true;
+                startX = e.pageX - previewContainer.offsetLeft;
+                startY = e.pageY - previewContainer.offsetTop;
+                scrollLeft = previewContainer.scrollLeft;
+                scrollTop = previewContainer.scrollTop;
+                previewContainer.style.cursor = 'grabbing';
+                e.preventDefault();
+            }
+        });
+
+        // Mouse move - perform panning
+        previewContainer.addEventListener('mousemove', (e) => {
+            if (!isPanning) return;
+            e.preventDefault();
+            
+            const x = e.pageX - previewContainer.offsetLeft;
+            const y = e.pageY - previewContainer.offsetTop;
+            const walkX = (x - startX) * 1.5; // Multiply for faster scrolling
+            const walkY = (y - startY) * 1.5;
+            
+            previewContainer.scrollLeft = scrollLeft - walkX;
+            previewContainer.scrollTop = scrollTop - walkY;
+        });
+
+        // Mouse up - stop panning
+        previewContainer.addEventListener('mouseup', () => {
+            if (isPanning) {
+                isPanning = false;
+                previewContainer.style.cursor = 'grab';
+            }
+        });
+
+        // Mouse leave - stop panning if dragging outside
+        previewContainer.addEventListener('mouseleave', () => {
+            if (isPanning) {
+                isPanning = false;
+                previewContainer.style.cursor = 'grab';
+            }
+        });
+
+        // Set initial cursor
+        previewContainer.style.cursor = 'grab';
+
+        // Double-click to reset zoom and position
+        previewContainer.addEventListener('dblclick', (e) => {
+            if (!e.target.closest('.element.clickable')) {
+                e.preventDefault();
+                currentZoom = 1.0;
+                updateZoom();
+                previewContainer.scrollLeft = 0;
+                previewContainer.scrollTop = 0;
+            }
+        });
+    }
+
     // Log report data for debugging
     if (window.reportData) {
         console.log('Report Data:', window.reportData);
