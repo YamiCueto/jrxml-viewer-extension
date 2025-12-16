@@ -65,9 +65,9 @@ En `package.json`, actualiza las URLs:
 1. Ve a https://marketplace.visualstudio.com/manage
 2. Click en "Create publisher"
 3. Configura:
-   - **ID**: `yamid` (debe coincidir con package.json)
-   - **Display Name**: Tu nombre
-   - **Email**: Tu email
+   - **ID**: `YamidCuetoMazo` (debe coincidir con package.json)
+   - **Display Name**: Yamid Cueto Mazo
+   - **Email**: yamidcuetomazo@hotmail.com
 
 ### Paso 4: Instalar vsce (si no lo tienes)
 
@@ -102,7 +102,7 @@ vsce publish
 ```
 
 O puedes hacerlo manual:
-1. Ve a https://marketplace.visualstudio.com/manage/publishers/yamid
+1. Ve a https://marketplace.visualstudio.com/manage/publishers/YamidCuetoMazo
 2. Click en "New extension" → "Visual Studio Code"
 3. Arrastra el archivo `.vsix`
 
