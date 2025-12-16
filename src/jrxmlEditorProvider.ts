@@ -1,11 +1,18 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { parseJrxml, JrxmlReport } from './jrxmlParser';
+import { JrxmlElementsProvider } from './jrxmlElementsProvider';
+import { JrxmlPropertiesProvider } from './jrxmlPropertiesProvider';
+import { outputChannel } from './extension';
 
 export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider {
     private static readonly viewType = 'jrxml-viewer.editor';
 
-    constructor(private readonly context: vscode.ExtensionContext) {}
+    constructor(
+        private readonly context: vscode.ExtensionContext,
+        private readonly elementsProvider: JrxmlElementsProvider,
+        private readonly propertiesProvider: JrxmlPropertiesProvider
+    ) {}
 
     async openCustomDocument(
         uri: vscode.Uri,
@@ -20,6 +27,13 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
         webviewPanel: vscode.WebviewPanel,
         token: vscode.CancellationToken
     ): Promise<void> {
+        outputChannel.appendLine(`[EditorProvider] Opening custom editor for: ${document.uri.fsPath}`);
+        
+        // Notify providers that a JRXML document has been opened
+        const textDocument = await vscode.workspace.openTextDocument(document.uri);
+        this.elementsProvider.setCurrentDocument(textDocument);
+        this.propertiesProvider.setCurrentDocument(textDocument);
+        
         // Configure webview
         webviewPanel.webview.options = {
             enableScripts: true,

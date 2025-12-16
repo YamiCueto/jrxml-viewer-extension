@@ -2,6 +2,42 @@
 
 All notable changes to the "jrxml-viewer" extension will be documented in this file.
 
+## [0.1.4] - 2025-12-16
+
+### Added
+- **Open JRXML Source** command - View raw XML source code
+- Source button in custom editor toolbar
+- Context menu option in Explorer to open source
+- Switch between visual editor and XML source view
+
+### Fixed
+- Critical infinite loop bug in Elements panel when no JRXML file open
+- Custom editor now properly notifies sidebar panels when document opens
+- Elements and Properties panels now update when opening files with custom editor
+- Added proper handling for info/error tree items
+
+### Enhanced
+- Output channel logging for better debugging ("JRXML Viewer" channel)
+- Improved document detection in sidebar providers
+- Better initialization of active document on extension startup
+
+## [0.1.3] - 2025-12-16
+
+### Added
+- **JRXML Explorer Sidebar** - New activity bar panel with three views:
+  - **JRXML Files**: Browse all .jrxml files in workspace with folder structure
+  - **Properties**: Real-time document properties (dimensions, margins, bands, parameters, variables, statistics)
+  - **Elements**: Hierarchical navigation of report elements by band
+- Quick access to JRXML files from sidebar
+- Interactive element tree with position and size information
+- Refresh button to reload file list
+- Custom icon for JRXML extension in activity bar
+
+### Enhanced
+- Better workspace organization for projects with multiple reports
+- At-a-glance view of document structure and statistics
+- Improved navigation with dedicated sidebar panels
+
 ## [0.1.2] - 2025-12-16
 
 ### Added

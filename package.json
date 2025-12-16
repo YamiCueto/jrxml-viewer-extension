@@ -2,7 +2,7 @@
   "name": "jrxml-viewer",
   "displayName": "JRXML Viewer & Editor",
   "description": "Professional visual preview and interactive editor for JasperReports JRXML files. View report structure, inspect elements, export to HTML, and navigate your reports with ease.",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "publisher": "YamidCuetoMazo",
   "author": {
     "name": "Yamid Cueto Mazo",
@@ -33,10 +33,42 @@
     "visual editor"
   ],
   "activationEvents": [
-    "onCustomEditor:jrxml-viewer.editor"
+    "onCustomEditor:jrxml-viewer.editor",
+    "onView:jrxmlFiles"
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "jrxml-explorer",
+          "title": "JRXML Viewer",
+          "icon": "media/jrxml-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "jrxml-explorer": [
+        {
+          "id": "jrxmlFiles",
+          "name": "JRXML Files",
+          "icon": "media/jrxml-icon.svg",
+          "contextualTitle": "JRXML Explorer"
+        },
+        {
+          "id": "jrxmlProperties",
+          "name": "Properties",
+          "icon": "media/jrxml-icon.svg",
+          "contextualTitle": "Document Properties"
+        },
+        {
+          "id": "jrxmlElements",
+          "name": "Elements",
+          "icon": "media/jrxml-icon.svg",
+          "contextualTitle": "Element Navigator"
+        }
+      ]
+    },
     "customEditors": [
       {
         "viewType": "jrxml-viewer.editor",
@@ -74,8 +106,53 @@
         "command": "jrxml-viewer.openPreview",
         "title": "Open JRXML Preview",
         "category": "JRXML"
+      },
+      {
+        "command": "jrxmlFiles.refresh",
+        "title": "Refresh JRXML Files",
+        "category": "JRXML",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "jrxmlFiles.openFile",
+        "title": "Open JRXML File",
+        "category": "JRXML"
+      },
+      {
+        "command": "jrxmlElements.revealElement",
+        "title": "Reveal Element in Editor",
+        "category": "JRXML"
+      },
+      {
+        "command": "jrxml-viewer.openSource",
+        "title": "Open JRXML Source",
+        "category": "JRXML",
+        "icon": "$(code)"
       }
-    ]
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "jrxmlFiles.refresh",
+          "when": "view == jrxmlFiles",
+          "group": "navigation"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "jrxml-viewer.openSource",
+          "when": "activeCustomEditorId == jrxml-viewer.editor",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "jrxml-viewer.openSource",
+          "when": "resourceExtname == .jrxml",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -83,7 +160,10 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile",
     "lint": "eslint src --ext ts",
-    "package": "vsce package"
+    "package": "vsce package",
+    "release:patch": "npm version patch && git push && git push --tags",
+    "release:minor": "npm version minor && git push && git push --tags",
+    "release:major": "npm version major && git push && git push --tags"
   },
   "devDependencies": {
     "@types/node": "^20.x",

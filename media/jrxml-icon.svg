@@ -1,0 +1,27 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="128" height="128" fill="#1e1e1e" rx="8"/>
+  
+  <!-- Document outline -->
+  <rect x="20" y="16" width="88" height="96" fill="none" stroke="#569cd6" stroke-width="3" rx="4"/>
+  
+  <!-- Header section -->
+  <rect x="28" y="24" width="72" height="12" fill="#569cd6" opacity="0.3" rx="2"/>
+  
+  <!-- Content lines representing report structure -->
+  <rect x="28" y="42" width="50" height="4" fill="#4ec9b0" rx="1"/>
+  <rect x="28" y="50" width="62" height="4" fill="#4ec9b0" rx="1"/>
+  <rect x="28" y="58" width="45" height="4" fill="#4ec9b0" rx="1"/>
+  
+  <!-- Detail section -->
+  <rect x="28" y="70" width="72" height="20" fill="none" stroke="#ce9178" stroke-width="2" rx="2"/>
+  <rect x="32" y="74" width="30" height="4" fill="#ce9178" opacity="0.6" rx="1"/>
+  <rect x="32" y="82" width="40" height="4" fill="#ce9178" opacity="0.6" rx="1"/>
+  
+  <!-- Footer lines -->
+  <rect x="28" y="96" width="35" height="4" fill="#608b4e" rx="1"/>
+  
+  <!-- JRXML badge/tag in corner -->
+  <circle cx="96" cy="96" r="16" fill="#569cd6"/>
+  <text x="96" y="101" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#ffffff" text-anchor="middle">JR</text>
+</svg>

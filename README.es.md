@@ -6,22 +6,38 @@ Una extensión profesional de Visual Studio Code para visualizar y editar archiv
 
 **Creado por Yamid Cueto para la comunidad Java y JasperReports**
 
-![JRXML Viewer](https://img.shields.io/badge/version-0.1.0-blue.svg)
+![JRXML Viewer](https://img.shields.io/badge/version-0.1.4-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![VS Code](https://img.shields.io/badge/VS%20Code-1.85%2B-blue.svg)
 
 ## 🎯 Características
 
+### Editor Visual & Vista Previa
 - **Vista previa visual interactiva**: Visualiza la estructura completa de tus reportes JRXML directamente en VS Code
 - **Elementos clickeables**: Haz click en cualquier elemento para ver sus propiedades detalladas
 - **Panel de propiedades**: Inspecciona y analiza cada elemento con información completa
 - **Tooltips informativos**: Información detallada al pasar el mouse sobre elementos
 - **Export a HTML**: Exporta tus reportes a archivos HTML standalone
-- **Análisis de estructura**: Panel lateral con información detallada sobre parámetros, campos, variables y grupos
-- **Zoom interactivo**: Controla el nivel de zoom con botones, teclado o rueda del mouse
+- **Zoom y paneo interactivo**: Controla el zoom con botones, teclado o rueda del mouse. Paneo arrastrando
+- **Vista de código fuente**: Alterna entre editor visual y código XML con un click
+
+### Panel Lateral JRXML Explorer
+- **Panel de Archivos JRXML**: Navega todos los archivos .jrxml en tu workspace con estructura de carpetas
+- **Panel de Propiedades**: Propiedades del documento en tiempo real incluyendo:
+  - Dimensiones y márgenes del reporte
+  - Tamaño y orientación de página
+  - Conteo de parámetros, campos y variables
+  - Información de bandas y estadísticas
+- **Navegador de Elementos**: Vista de árbol jerárquico de todos los elementos organizados por banda
+  - Navegación rápida a través de la estructura del reporte
+  - Información de posición y tamaño de cada elemento
+  - Iconos visuales para diferentes tipos de elementos
+
+### Navegación Avanzada
 - **Syntax highlighting**: Resaltado de sintaxis mejorado para archivos JRXML
 - **Visualización de bandas**: Identifica fácilmente header, detail, footer y otras bandas del reporte
 - **Elementos visuales**: Muestra textFields, staticTexts, imágenes, líneas, rectángulos, subreportes y gráficos
+- **Integración con workspace**: Icono dedicado en la barra de actividades para acceso rápido
 - **Soporte completo**: Compatible con todos los elementos principales de JasperReports
 
 ## 📦 Instalación
@@ -46,9 +62,23 @@ Una extensión profesional de Visual Studio Code para visualizar y editar archiv
 
 ## 🚀 Uso
 
+### Abriendo Archivos JRXML
 1. Abre cualquier archivo `.jrxml` en VS Code
 2. La extensión automáticamente abrirá el visor visual
-3. Puedes alternar entre el editor de texto XML y el visor visual
+3. **Cambiar vistas**:
+   - Haz click en el botón **`</>`** en la barra del editor para ver el código XML
+   - Click derecho en cualquier archivo `.jrxml` en el Explorador → "Open JRXML Source"
+   - Usa el panel lateral JRXML Explorer para navegar y abrir archivos
+
+### Panel Lateral JRXML Explorer
+1. Haz click en el icono JRXML en la Barra de Actividades (barra lateral izquierda)
+2. **JRXML Files**: Navega todos los reportes en tu workspace
+   - Click en cualquier archivo para abrir en el editor visual
+   - Usa el botón de actualizar para recargar la lista de archivos
+3. **Properties**: Ver metadata del documento y estadísticas
+4. **Elements**: Navega a través de la estructura del reporte por banda
+   - Expande bandas para ver los elementos contenidos
+   - Ver información de posición y tamaño
 
 ### Atajos de teclado
 
@@ -56,17 +86,22 @@ Una extensión profesional de Visual Studio Code para visualizar y editar archiv
 - `Ctrl/Cmd + -`: Disminuir zoom
 - `Ctrl/Cmd + 0`: Resetear zoom al 100%
 - `Ctrl/Cmd + Wheel`: Zoom con la rueda del mouse
+- `Click + Arrastrar`: Paneo del canvas
+- `Doble-click`: Resetear zoom y posición
 - `Escape`: Cerrar panel de propiedades/deseleccionar elemento
 
 ### Comandos
 
 - `JRXML: Open Preview`: Abre la vista previa del archivo JRXML actual
+- `JRXML: Open JRXML Source`: Abre el editor de código XML
+- `JRXML: Refresh JRXML Files`: Actualiza la lista de archivos en el panel lateral
 
 ### Botones de la interfaz
 
 - **📄 Export HTML**: Exporta el reporte a un archivo HTML
 - **🔧 Properties**: Abre/cierra el panel de propiedades
 - **+/-**: Controles de zoom
+- **</>**: Cambiar a vista de código XML
 
 ## 🔧 Desarrollo
 
@@ -80,17 +115,21 @@ Una extensión profesional de Visual Studio Code para visualizar y editar archiv
 ```
 jrxml-viewer-extension/
 ├── src/
-│   ├── extension.ts           # Punto de entrada de la extensión
-│   ├── jrxmlEditorProvider.ts # Proveedor del editor personalizado
-│   └── jrxmlParser.ts         # Parser de archivos JRXML
+│   ├── extension.ts              # Punto de entrada de la extensión
+│   ├── jrxmlEditorProvider.ts    # Proveedor del editor personalizado
+│   ├── jrxmlParser.ts            # Parser de archivos JRXML
+│   ├── jrxmlFilesProvider.ts     # Proveedor del explorador de archivos
+│   ├── jrxmlPropertiesProvider.ts # Proveedor del panel de propiedades
+│   └── jrxmlElementsProvider.ts  # Proveedor del navegador de elementos
 ├── media/
-│   ├── preview.css            # Estilos del visor
-│   └── preview.js             # Lógica del visor
+│   ├── preview.css               # Estilos del visor
+│   ├── preview.js                # Lógica del visor
+│   └── jrxml-icon.svg            # Icono de la extensión
 ├── .vscode/
-│   ├── launch.json            # Configuración de debug
-│   └── tasks.json             # Tareas de build
-├── package.json               # Manifiesto de la extensión
-└── tsconfig.json              # Configuración de TypeScript
+│   ├── launch.json               # Configuración de debug
+│   └── tasks.json                # Tareas de build
+├── package.json                  # Manifiesto de la extensión
+└── tsconfig.json                 # Configuración de TypeScript
 ```
 
 ### Scripts disponibles
@@ -146,7 +185,23 @@ npm run package      # Empaqueta la extensión para publicación
 
 ## 🛣️ Roadmap
 
+### Completado ✅
+- [x] Vista previa visual con elementos clickeables
+- [x] Controles de zoom y paneo interactivos
+- [x] Panel lateral JRXML Explorer con tres paneles
+- [x] Navegación de propiedades y elementos
+- [x] Funcionalidad de exportar a HTML
+- [x] Cambio entre vista visual y código fuente
+- [x] Zoom con rueda del mouse y navegación arrastrando
+- [x] Navegador de archivos del workspace
+- [x] Estadísticas del documento en tiempo real
+
+### En Progreso 🚧
 - [ ] Editor visual interactivo (drag & drop)
+- [ ] Scroll al elemento en código fuente
+- [ ] Sincronización de selección de elementos
+
+### Planeado 📋
 - [ ] Soporte completo para charts y gráficos complejos
 - [ ] Exportar a PDF desde VS Code
 - [ ] Validación de sintaxis en tiempo real
@@ -190,10 +245,22 @@ Si tienes preguntas, sugerencias o encuentras algún bug:
 
 ## 📊 Estadísticas
 
-- **Versión actual**: 0.1.0
+- **Versión actual**: 0.1.4
+- **Fecha de lanzamiento**: 16 de diciembre de 2025
 - **Compatible con**: VS Code 1.85.0+
 - **Licencia**: MIT
 - **Lenguaje**: TypeScript
+- **Dependencias**: fast-xml-parser
+
+## 📝 Historial de Cambios
+
+Ver [CHANGELOG.md](./CHANGELOG.md) para el historial detallado de versiones.
+
+### Últimas Actualizaciones (v0.1.4)
+- ✨ Agregado comando "Open JRXML Source"
+- 🐛 Corregido bug crítico de bucle infinito en el panel de Elementos
+- 🔧 Mejorada integración del editor personalizado con los paneles laterales
+- 📊 Agregado canal de output para debugging
 
 ---
 

@@ -6,22 +6,38 @@ A professional Visual Studio Code extension for viewing and editing JasperReport
 
 **Created by Yamid Cueto for the Java and JasperReports community**
 
-![JRXML Viewer](https://img.shields.io/badge/version-0.1.0-blue.svg)
+![JRXML Viewer](https://img.shields.io/badge/version-0.1.4-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![VS Code](https://img.shields.io/badge/VS%20Code-1.85%2B-blue.svg)
 
 ## 🎯 Features
 
+### Visual Editor & Preview
 - **Interactive visual preview**: Visualize the complete structure of your JRXML reports directly in VS Code
 - **Clickable elements**: Click on any element to see its detailed properties
 - **Properties panel**: Inspect and analyze each element with complete information
 - **Informative tooltips**: Detailed information when hovering over elements
 - **Export to HTML**: Export your reports to standalone HTML files
-- **Structure analysis**: Sidebar with detailed information about parameters, fields, variables, and groups
-- **Interactive zoom**: Control zoom level with buttons, keyboard, or mouse wheel
+- **Interactive zoom & pan**: Control zoom with buttons, keyboard, or mouse wheel. Pan by dragging
+- **Source code view**: Switch between visual editor and XML source with one click
+
+### JRXML Explorer Sidebar
+- **JRXML Files Panel**: Browse all .jrxml files in your workspace with folder structure
+- **Properties Panel**: Real-time document properties including:
+  - Report dimensions and margins
+  - Page size and orientation
+  - Parameters, fields, and variables count
+  - Band information and statistics
+- **Elements Navigator**: Hierarchical tree view of all report elements organized by band
+  - Quick navigation through report structure
+  - Position and size information for each element
+  - Visual icons for different element types
+
+### Advanced Navigation
 - **Syntax highlighting**: Enhanced syntax highlighting for JRXML files
 - **Band visualization**: Easily identify header, detail, footer, and other report bands
 - **Visual elements**: Display textFields, staticTexts, images, lines, rectangles, subreports, and charts
+- **Workspace integration**: Dedicated activity bar icon for quick access
 - **Full support**: Compatible with all major JasperReports elements
 
 ## 📦 Installation
@@ -46,9 +62,23 @@ A professional Visual Studio Code extension for viewing and editing JasperReport
 
 ## 🚀 Usage
 
+### Opening JRXML Files
 1. Open any `.jrxml` file in VS Code
 2. The extension will automatically open the visual viewer
-3. You can toggle between the XML text editor and the visual viewer
+3. **Switch views**:
+   - Click the **`</>`** button in the editor toolbar to view XML source
+   - Right-click any `.jrxml` file in Explorer → "Open JRXML Source"
+   - Use the JRXML Explorer sidebar to browse and open files
+
+### JRXML Explorer Sidebar
+1. Click the JRXML icon in the Activity Bar (left sidebar)
+2. **JRXML Files**: Browse all reports in your workspace
+   - Click any file to open in visual editor
+   - Use the refresh button to reload the file list
+3. **Properties**: View document metadata and statistics
+4. **Elements**: Navigate through report structure by band
+   - Expand bands to see contained elements
+   - View position and size information
 
 ### Keyboard shortcuts
 
@@ -56,17 +86,22 @@ A professional Visual Studio Code extension for viewing and editing JasperReport
 - `Ctrl/Cmd + -`: Zoom out
 - `Ctrl/Cmd + 0`: Reset zoom to 100%
 - `Ctrl/Cmd + Wheel`: Zoom with mouse wheel
+- `Click + Drag`: Pan the canvas
+- `Double-click`: Reset zoom and position
 - `Escape`: Close properties panel/deselect element
 
 ### Commands
 
 - `JRXML: Open Preview`: Opens the preview of the current JRXML file
+- `JRXML: Open JRXML Source`: Opens the XML source code editor
+- `JRXML: Refresh JRXML Files`: Refresh the file list in sidebar
 
 ### Interface buttons
 
 - **📄 Export HTML**: Export the report to an HTML file
 - **🔧 Properties**: Open/close the properties panel
 - **+/-**: Zoom controls
+- **</>**: Switch to XML source view
 
 ## 🔧 Development
 
@@ -80,17 +115,21 @@ A professional Visual Studio Code extension for viewing and editing JasperReport
 ```
 jrxml-viewer-extension/
 ├── src/
-│   ├── extension.ts           # Extension entry point
-│   ├── jrxmlEditorProvider.ts # Custom editor provider
-│   └── jrxmlParser.ts         # JRXML file parser
+│   ├── extension.ts              # Extension entry point
+│   ├── jrxmlEditorProvider.ts    # Custom editor provider
+│   ├── jrxmlParser.ts            # JRXML file parser
+│   ├── jrxmlFilesProvider.ts     # File explorer provider
+│   ├── jrxmlPropertiesProvider.ts # Properties panel provider
+│   └── jrxmlElementsProvider.ts  # Elements navigator provider
 ├── media/
-│   ├── preview.css            # Viewer styles
-│   └── preview.js             # Viewer logic
+│   ├── preview.css               # Viewer styles
+│   ├── preview.js                # Viewer logic
+│   └── jrxml-icon.svg            # Extension icon
 ├── .vscode/
-│   ├── launch.json            # Debug configuration
-│   └── tasks.json             # Build tasks
-├── package.json               # Extension manifest
-└── tsconfig.json              # TypeScript configuration
+│   ├── launch.json               # Debug configuration
+│   └── tasks.json                # Build tasks
+├── package.json                  # Extension manifest
+└── tsconfig.json                 # TypeScript configuration
 ```
 
 ### Available scripts
@@ -146,7 +185,23 @@ npm run package      # Package extension for publishing
 
 ## 🛣️ Roadmap
 
+### Completed ✅
+- [x] Visual preview with clickable elements
+- [x] Interactive zoom and pan controls
+- [x] JRXML Explorer sidebar with three panels
+- [x] Properties and Elements navigation
+- [x] Export to HTML functionality
+- [x] Switch between visual and source view
+- [x] Mouse wheel zoom and drag navigation
+- [x] Workspace file browser
+- [x] Real-time document statistics
+
+### In Progress 🚧
 - [ ] Interactive visual editor (drag & drop)
+- [ ] Scroll to element in source code
+- [ ] Element selection synchronization
+
+### Planned 📋
 - [ ] Full support for complex charts and graphs
 - [ ] Export to PDF from VS Code
 - [ ] Real-time syntax validation
@@ -190,10 +245,22 @@ If you have questions, suggestions, or find any bugs:
 
 ## 📊 Statistics
 
-- **Current version**: 0.1.0
+- **Current version**: 0.1.4
+- **Release date**: December 16, 2025
 - **Compatible with**: VS Code 1.85.0+
 - **License**: MIT
 - **Language**: TypeScript
+- **Dependencies**: fast-xml-parser
+
+## 📝 Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for detailed version history.
+
+### Latest Updates (v0.1.4)
+- ✨ Added "Open JRXML Source" command
+- 🐛 Fixed critical infinite loop bug in Elements panel
+- 🔧 Improved custom editor integration with sidebar panels
+- 📊 Added output channel logging for debugging
 
 ---
 
