@@ -1,0 +1,128 @@
+{
+  "name": "jrxml-viewer",
+  "displayName": "JRXML Viewer & Editor",
+  "description": "Professional visual preview and interactive editor for JasperReports JRXML files. View report structure, inspect elements, export to HTML, and navigate your reports with ease.",
+  "version": "0.1.0",
+  "publisher": "yamid",
+  "author": {
+    "name": "Yamid",
+    "email": "your-email@example.com"
+  },
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "jrxml",
+    "jasperreports",
+    "jasper",
+    "report",
+    "viewer",
+    "editor",
+    "java",
+    "xml",
+    "preview",
+    "visual editor"
+  ],
+  "activationEvents": [
+    "onCustomEditor:jrxml-viewer.editor"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "jrxml-viewer.editor",
+        "displayName": "JRXML Visual Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.jrxml"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
+    "languages": [
+      {
+        "id": "jrxml",
+        "aliases": [
+          "JRXML",
+          "JasperReports XML"
+        ],
+        "extensions": [
+          ".jrxml"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "jrxml",
+        "scopeName": "text.xml.jrxml",
+        "path": "./syntaxes/jrxml.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "jrxml-viewer.openPreview",
+        "title": "Open JRXML Preview",
+        "category": "JRXML"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.x",
+    "@typescript-eslint/parser": "^6.x",
+    "@vscode/vsce": "^2.22.0",
+    "eslint": "^8.x",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.3.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YamiCueto/jrxml-viewer-extension.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YamiCueto/jrxml-viewer-extension/issues"
+  },
+  "homepage": "https://github.com/YamiCueto/jrxml-viewer-extension#readme",
+  "license": "MIT",
+  "badges": [
+    {
+      "url": "https://img.shields.io/visual-studio-marketplace/v/yamid.jrxml-viewer",
+      "href": "https://marketplace.visualstudio.com/items?itemName=yamid.jrxml-viewer",
+      "description": "Version"
+    },
+    {
+      "url": "https://img.shields.io/visual-studio-marketplace/i/yamid.jrxml-viewer",
+      "href": "https://marketplace.visualstudio.com/items?itemName=yamid.jrxml-viewer",
+      "description": "Installs"
+    },
+    {
+      "url": "https://img.shields.io/visual-studio-marketplace/r/yamid.jrxml-viewer",
+      "href": "https://marketplace.visualstudio.com/items?itemName=yamid.jrxml-viewer",
+      "description": "Rating"
+    }
+  ],
+  "qna": "marketplace"
+}
