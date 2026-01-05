@@ -2,8 +2,9 @@
   "name": "jrxml-viewer",
   "displayName": "JRXML Viewer & Editor",
   "description": "Professional visual preview and interactive editor for JasperReports JRXML files. View report structure, inspect elements, export to HTML, and navigate your reports with ease.",
-  "version": "0.1.4",
+  "version": "0.1.6",
   "publisher": "YamidCuetoMazo",
+  "icon": "report.png",
   "author": {
     "name": "Yamid Cueto Mazo",
     "email": "yamidcuetomazo@hotmail.com"
@@ -43,7 +44,7 @@
         {
           "id": "jrxml-explorer",
           "title": "JRXML Viewer",
-          "icon": "media/jrxml-icon.svg"
+          "icon": "$(preview)"
         }
       ]
     },
