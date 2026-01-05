@@ -2,6 +2,11 @@
 
 All notable changes to the "jrxml-viewer" extension will be documented in this file.
 
+## [0.1.7] - 2026-01-05
+
+### Changed
+- **Activity Bar Icon** - Changed sidebar icon to VS Code's built-in preview icon
+
 ## [0.1.6] - 2026-01-05
 
 ### Changed
