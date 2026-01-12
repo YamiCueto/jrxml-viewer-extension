@@ -14,6 +14,11 @@ export function activate(context: vscode.ExtensionContext) {
     outputChannel.appendLine('===========================================');
     console.log('JRXML Viewer extension is now active');
 
+    // Get configuration for default view
+    const config = vscode.workspace.getConfiguration('jrxml-viewer');
+    const defaultView = config.get<string>('defaultView', 'preview');
+    outputChannel.appendLine(`Default view setting: ${defaultView}`);
+
     // Register sidebar tree views first
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '';
     
@@ -126,6 +131,27 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     outputChannel.appendLine('All commands registered successfully');
+
+    // Handle opening JRXML files based on user preference
+    context.subscriptions.push(
+        vscode.workspace.onDidOpenTextDocument((document) => {
+            if (document.fileName.endsWith('.jrxml')) {
+                const config = vscode.workspace.getConfiguration('jrxml-viewer');
+                const defaultView = config.get<string>('defaultView', 'preview');
+                
+                if (defaultView === 'preview') {
+                    // Only open preview if not already in custom editor
+                    const activeEditor = vscode.window.activeTextEditor;
+                    if (activeEditor && activeEditor.document.uri.toString() === document.uri.toString()) {
+                        outputChannel.appendLine(`Opening preview for: ${document.uri.fsPath}`);
+                        vscode.commands.executeCommand('vscode.openWith', document.uri, 'jrxml-viewer.editor');
+                    }
+                }
+                // If defaultView is 'source', the file is already opened in text editor, so do nothing
+            }
+        })
+    );
+
     outputChannel.appendLine('===========================================');
     outputChannel.appendLine('JRXML Viewer Extension Activated! ✓');
     outputChannel.appendLine('===========================================');

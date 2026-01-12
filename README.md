@@ -96,6 +96,17 @@ A professional Visual Studio Code extension for viewing and editing JasperReport
 - `JRXML: Open JRXML Source`: Opens the XML source code editor
 - `JRXML: Refresh JRXML Files`: Refresh the file list in sidebar
 
+### Settings
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `jrxml-viewer.defaultView` | Choose which view to open by default when opening JRXML files. Options: `preview` (visual editor) or `source` (XML code) | `preview` |
+
+To change the default view:
+1. Open VS Code Settings (Ctrl+,)
+2. Search for "JRXML Viewer"
+3. Select your preferred default view
+
 ### Interface buttons
 
 - **📄 Export HTML**: Export the report to an HTML file

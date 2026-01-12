@@ -96,6 +96,17 @@ Una extensión profesional de Visual Studio Code para visualizar y editar archiv
 - `JRXML: Open JRXML Source`: Abre el editor de código XML
 - `JRXML: Refresh JRXML Files`: Actualiza la lista de archivos en el panel lateral
 
+### Configuración
+
+| Configuración | Descripción | Por defecto |
+|---------------|-------------|-------------|
+| `jrxml-viewer.defaultView` | Elige qué vista abrir por defecto al abrir archivos JRXML. Opciones: `preview` (editor visual) o `source` (código XML) | `preview` |
+
+Para cambiar la vista por defecto:
+1. Abre la Configuración de VS Code (Ctrl+,)
+2. Busca "JRXML Viewer"
+3. Selecciona tu vista preferida
+
 ### Botones de la interfaz
 
 - **📄 Export HTML**: Exporta el reporte a un archivo HTML

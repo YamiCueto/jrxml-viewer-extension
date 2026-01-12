@@ -2,6 +2,13 @@
 
 All notable changes to the "jrxml-viewer" extension will be documented in this file.
 
+## [0.1.8] - 2026-01-12
+
+### Added
+- **Default View Setting** - New configuration option `jrxml-viewer.defaultView` to choose whether JRXML files open in visual preview or source code editor by default ([#1](https://github.com/YamiCueto/jrxml-viewer-extension/issues/1))
+  - Options: `preview` (default) or `source`
+  - Access via VS Code Settings → search "JRXML Viewer"
+
 ## [0.1.7] - 2026-01-05
 
 ### Changed
