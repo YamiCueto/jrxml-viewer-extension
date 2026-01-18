@@ -2,6 +2,20 @@
 
 All notable changes to the "jrxml-viewer" extension will be documented in this file.
 
+## [0.1.9] - 2026-01-18
+
+### Added
+- **Interactive Editing (Preview)** - Initial support for editing report elements directly from the visual preview: drag & drop repositioning and properties panel edits (position, size, colors, font, expressions).
+
+### Changed
+- **Webview preview migrated to TypeScript** - `media/preview.ts` compiled to `media/preview.js` for better type-safety and maintainability.
+- **Robust JRXML updates** - Improvements to host-side element persistence logic: parent-block replacement and safer write/verification flow.
+- **Parser resilience** - `jrxmlParser` now handles namespace/prefixed jasperReport keys and nested band containers reliably.
+
+### Fixed
+- Fixed cases where updated elements were not persisted due to multi-line or reordered attributes in JRXML.
+- Improved webview ↔ host messaging and refresh logic so the preview reflects saved changes immediately.
+
 ## [0.1.8] - 2026-01-12
 
 ### Added

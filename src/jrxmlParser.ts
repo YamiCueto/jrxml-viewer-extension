@@ -1,4 +1,5 @@
 import { XMLParser } from 'fast-xml-parser';
+import { outputChannel } from './extension';
 
 export interface JrxmlReport {
     name: string;
@@ -81,10 +82,51 @@ export function parseJrxml(xmlContent: string): JrxmlReport {
     });
 
     const parsed = parser.parse(xmlContent);
-    const jasperReport = parsed.jasperReport;
-    
+    // Support possible namespaces by finding a key that contains 'jasperReport' (case-insensitive)
+    let jasperReport = parsed.jasperReport;
+    if (!jasperReport) {
+        const key = Object.keys(parsed).find(k => k.toLowerCase().includes('jasperreport'));
+        if (key) {
+            // @ts-ignore
+            jasperReport = parsed[key];
+        }
+    }
+
     if (!jasperReport) {
         throw new Error('No jasperReport element found in XML');
+    }
+
+    // Diagnostic: log top-level keys of jasperReport to help debugging
+    try {
+        const keys = Object.keys(jasperReport || {}).slice(0, 50).join(',');
+        outputChannel.appendLine(`[Parser] jasperReport keys: ${keys}`);
+    } catch (e) {
+        // ignore
+    }
+    // Further diagnostics: dump a truncated JSON of jasperReport and check bandType nodes
+    try {
+        const dumped = JSON.stringify(jasperReport, null, 2).substring(0, 8000).replace(/\n/g, '\\n');
+        outputChannel.appendLine(`[Parser] jasperReport dump (truncated): ${dumped}`);
+    } catch (e) {
+        // ignore
+    }
+    try {
+        const bandTypes = [
+            'title', 'pageHeader', 'columnHeader', 'detail',
+            'columnFooter', 'pageFooter', 'summary', 'background',
+            'lastPageFooter', 'noData'
+        ];
+        bandTypes.forEach(bt => {
+            const node = findNode(jasperReport, bt);
+            if (node === undefined) {
+                outputChannel.appendLine(`[Parser] findNode('${bt}') => undefined`);
+            } else {
+                const info = typeof node === 'string' ? `string(${(node as string).length})` : `object keys:${Object.keys(node).length}`;
+                outputChannel.appendLine(`[Parser] findNode('${bt}') => ${info}`);
+            }
+        });
+    } catch (e) {
+        // ignore
     }
 
     const report: JrxmlReport = {
@@ -104,9 +146,32 @@ export function parseJrxml(xmlContent: string): JrxmlReport {
         bands: []
     };
 
+    // Helper to find node by name with namespace/prefix tolerance, recursively
+    function findNode(obj: any, name: string, depth = 0): any {
+        if (!obj || depth > 6) return undefined;
+        if (obj[name] !== undefined) return obj[name];
+        const lower = name.toLowerCase();
+        // direct match or contains
+        const directKey = Object.keys(obj).find(k => k.toLowerCase() === lower || k.toLowerCase().includes(lower));
+        if (directKey) return obj[directKey];
+        // recurse into child objects
+        for (const k of Object.keys(obj)) {
+            const child = obj[k];
+            if (child && typeof child === 'object') {
+                const found = findNode(child, name, depth + 1);
+                if (found !== undefined) return found;
+            }
+        }
+        return undefined;
+    }
+
+    function toArray(node: any) {
+        if (node === undefined || node === null) return [];
+        return Array.isArray(node) ? node : [node];
+    }
+
     // Parse parameters
-    const parameters = Array.isArray(jasperReport.parameter) ? jasperReport.parameter : 
-                      jasperReport.parameter ? [jasperReport.parameter] : [];
+    const parameters = toArray(findNode(jasperReport, 'parameter'));
     parameters.forEach((param: any) => {
         report.parameters.push({
             name: param['@_name'] || '',
@@ -117,8 +182,7 @@ export function parseJrxml(xmlContent: string): JrxmlReport {
     });
 
     // Parse fields
-    const fields = Array.isArray(jasperReport.field) ? jasperReport.field : 
-                   jasperReport.field ? [jasperReport.field] : [];
+    const fields = toArray(findNode(jasperReport, 'field'));
     fields.forEach((field: any) => {
         report.fields.push({
             name: field['@_name'] || '',
@@ -127,8 +191,7 @@ export function parseJrxml(xmlContent: string): JrxmlReport {
     });
 
     // Parse variables
-    const variables = Array.isArray(jasperReport.variable) ? jasperReport.variable : 
-                      jasperReport.variable ? [jasperReport.variable] : [];
+    const variables = toArray(findNode(jasperReport, 'variable'));
     variables.forEach((variable: any) => {
         report.variables.push({
             name: variable['@_name'] || '',
@@ -139,8 +202,7 @@ export function parseJrxml(xmlContent: string): JrxmlReport {
     });
 
     // Parse groups
-    const groups = Array.isArray(jasperReport.group) ? jasperReport.group : 
-                   jasperReport.group ? [jasperReport.group] : [];
+    const groups = toArray(findNode(jasperReport, 'group'));
     groups.forEach((group: any) => {
         report.groups.push({
             name: group['@_name'] || '',
@@ -156,9 +218,9 @@ export function parseJrxml(xmlContent: string): JrxmlReport {
     ];
 
     bandTypes.forEach(bandType => {
-        const bandContainer = jasperReport[bandType];
-        if (bandContainer && bandContainer.band) {
-            const bands = Array.isArray(bandContainer.band) ? bandContainer.band : [bandContainer.band];
+        const bandContainer = findNode(jasperReport, bandType);
+        if (bandContainer) {
+            const bands = toArray(bandContainer.band || bandContainer);
             bands.forEach((band: any) => {
                 report.bands.push({
                     type: bandType,

@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "ES2020",
+    "target": "ES2020",
+    "outDir": "media",
+    "lib": ["es6", "dom"],
+    "sourceMap": true,
+    "rootDir": "media",
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "media/**/*.ts"
+  ],
+  "exclude": ["node_modules"]
+}

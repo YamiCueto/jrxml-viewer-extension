@@ -51,6 +51,12 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
 
         try {
             reportData = parseJrxml(jrxmlText);
+            if (reportData) {
+                outputChannel.appendLine(`[EditorProvider] Initial parse: bands=${reportData.bands.length}`);
+                reportData.bands.forEach((b: any, i: number) => {
+                    outputChannel.appendLine(`[EditorProvider] Band[${i}] type=${b.type} elements=${(b.elements||[]).length}`);
+                });
+            }
         } catch (error) {
             parseError = error instanceof Error ? error.message : 'Unknown parsing error';
             console.error('Error parsing JRXML:', error);
@@ -65,7 +71,7 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
 
         // Handle messages from webview
         webviewPanel.webview.onDidReceiveMessage(
-            message => {
+            async message => {
                 switch (message.command) {
                     case 'alert':
                         vscode.window.showInformationMessage(message.text);
@@ -75,6 +81,25 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
                         break;
                     case 'editElement':
                         vscode.window.showInformationMessage(`Editing: ${message.elementType} at (${message.x}, ${message.y})`);
+                        break;
+                    case 'updateElement':
+                        await this.updateElementInFile(document.uri, message.elementData, jrxmlText);
+                        // Refresh the webview
+                        const updatedContent = await vscode.workspace.fs.readFile(document.uri);
+                        const updatedText = Buffer.from(updatedContent).toString('utf8');
+                        try {
+                            reportData = parseJrxml(updatedText);
+                            if (reportData) {
+                                outputChannel.appendLine(`[EditorProvider] Refresh parse: bands=${reportData.bands.length}`);
+                                reportData.bands.forEach((b: any, i: number) => {
+                                    outputChannel.appendLine(`[EditorProvider] AfterUpdate Band[${i}] type=${b.type} elements=${(b.elements||[]).length}`);
+                                });
+                            }
+                            webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview, reportData, null);
+                            vscode.window.showInformationMessage('Element updated successfully!');
+                        } catch (error) {
+                            vscode.window.showErrorMessage('Error refreshing preview');
+                        }
                         break;
                 }
             },
@@ -215,11 +240,11 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
 
     private renderBands(report: JrxmlReport): string {
         let currentY = 0;
-        return report.bands.map((band: any) => {
+        return report.bands.map((band: any, bandIndex: number) => {
             const bandHtml = `
                 <div class="band band-${band.type}" style="top: ${currentY}px; height: ${band.height}px; width: ${report.columnWidth}px; left: ${report.leftMargin}px;">
                     <div class="band-label">${band.type.toUpperCase()}</div>
-                    ${this.renderElements(band.elements)}
+                    ${this.renderElements(band.elements, band.type, bandIndex)}
                 </div>
             `;
             currentY += band.height;
@@ -227,10 +252,20 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
         }).join('');
     }
 
-    private renderElements(elements: any[]): string {
-        return elements.map((element, index) => {
+    private renderElements(elements: any[], bandType: string, bandIndex: number): string {
+        return elements.map((element, elementIndex) => {
+            // Add identification data to element
+            const elementWithId = {
+                ...element,
+                bandType,
+                bandIndex,
+                elementIndex,
+                originalX: element.x,
+                originalY: element.y
+            };
+            
             const style = `left: ${element.x}px; top: ${element.y}px; width: ${element.width}px; height: ${element.height}px;`;
-            const dataAttrs = `data-element='${JSON.stringify(element).replace(/'/g, '&apos;')}'`;
+            const dataAttrs = `data-element='${JSON.stringify(elementWithId).replace(/'/g, '&apos;')}' data-band="${bandType}" data-band-index="${bandIndex}" data-element-index="${elementIndex}"`;
             
             switch (element.type) {
                 case 'staticText':
@@ -364,5 +399,243 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
     </div>
 </body>
 </html>`;
+    }
+
+    private async updateElementInFile(uri: vscode.Uri, elementData: any, originalContent: string): Promise<void> {
+        try {
+            const { bandType, bandIndex, elementIndex, originalX, originalY } = elementData;
+            
+            if (bandType === undefined || elementIndex === undefined) {
+                vscode.window.showErrorMessage('Cannot identify element location in file');
+                return;
+            }
+
+            // Read the current file content
+            const content = await vscode.workspace.fs.readFile(uri);
+            let xmlContent = Buffer.from(content).toString('utf8');
+            const originalXmlContent = xmlContent; // Keep original for comparison
+
+            const xmlElementType = elementData.type;
+            const searchX = originalX !== undefined ? originalX : elementData.x;
+            const searchY = originalY !== undefined ? originalY : elementData.y;
+
+            outputChannel.appendLine(`[EditorProvider] Searching for ${xmlElementType} at original position (${searchX}, ${searchY})`);
+            outputChannel.appendLine(`[EditorProvider] New values: x=${elementData.x}, y=${elementData.y}, width=${elementData.width}, height=${elementData.height}`);
+
+            let updated = false;
+
+            // Find reportElement with matching x and y coordinates and update its parent block
+            const reportElementRegex = /<reportElement([\s\S]*?)\/?\s*>/g;
+            let match;
+
+            while ((match = reportElementRegex.exec(xmlContent)) !== null) {
+                const fullMatch = match[0];
+                const attributes = match[1] || '';
+
+                const xMatch = attributes.match(/x="(\d+)"/);
+                const yMatch = attributes.match(/y="(\d+)"/);
+
+                if (xMatch && yMatch) {
+                    const foundX = parseInt(xMatch[1]);
+                    const foundY = parseInt(yMatch[1]);
+
+                    outputChannel.appendLine(`[EditorProvider] Found reportElement with x=${foundX}, y=${foundY}`);
+
+                    if (foundX === searchX && foundY === searchY) {
+                        outputChannel.appendLine(`[EditorProvider] MATCH! Located reportElement at index ${match.index}`);
+
+                        // Locate parent tag (e.g., <staticText> or <textField>) surrounding this reportElement
+                        const parentTag = elementData.type; // 'staticText' or 'textField' etc.
+                        const parentStart = xmlContent.lastIndexOf(`<${parentTag}`, match.index);
+                        if (parentStart === -1) {
+                            outputChannel.appendLine(`[EditorProvider] Could not find parent <${parentTag}> start`);
+                            break;
+                        }
+                        const parentEndTag = `</${parentTag}>`;
+                        const parentEnd = xmlContent.indexOf(parentEndTag, match.index);
+                        if (parentEnd === -1) {
+                            outputChannel.appendLine(`[EditorProvider] Could not find parent </${parentTag}> end`);
+                            break;
+                        }
+
+                        const parentBlock = xmlContent.substring(parentStart, parentEnd + parentEndTag.length);
+
+                        outputChannel.appendLine(`[EditorProvider] Parent block length: ${parentBlock.length}`);
+
+                        // Replace attributes inside the reportElement within parentBlock
+                        const updatedParentBlock = parentBlock.replace(/<reportElement([\s\S]*?)\/?\s*>/, (repMatch: string, repAttrs: string) => {
+                            let newRepAttrs = repAttrs;
+                            // Update x/y/width/height if present
+                            if (/x="\d+"/.test(newRepAttrs)) {
+                                newRepAttrs = newRepAttrs.replace(/x="\d+"/, `x="${elementData.x}"`);
+                            } else {
+                                newRepAttrs = `${newRepAttrs} x="${elementData.x}"`;
+                            }
+                            if (/y="\d+"/.test(newRepAttrs)) {
+                                newRepAttrs = newRepAttrs.replace(/y="\d+"/, `y="${elementData.y}"`);
+                            } else {
+                                newRepAttrs = `${newRepAttrs} y="${elementData.y}"`;
+                            }
+                            if (/width="\d+"/.test(newRepAttrs)) {
+                                newRepAttrs = newRepAttrs.replace(/width="\d+"/, `width="${elementData.width}"`);
+                            } else {
+                                newRepAttrs = `${newRepAttrs} width="${elementData.width}"`;
+                            }
+                            if (/height="\d+"/.test(newRepAttrs)) {
+                                newRepAttrs = newRepAttrs.replace(/height="\d+"/, `height="${elementData.height}"`);
+                            } else {
+                                newRepAttrs = `${newRepAttrs} height="${elementData.height}"`;
+                            }
+
+                            return `<reportElement${newRepAttrs}>`;
+                        });
+
+                        // Update font properties inside textElement if present
+                        let finalParentBlock = updatedParentBlock;
+                        if ((elementData.fontSize !== undefined) || (elementData.isBold !== undefined)) {
+                            finalParentBlock = finalParentBlock.replace(/<textElement([\s\S]*?)>([\s\S]*?)<\/textElement>/, (tm: string, tAttrs: string, inner: string) => {
+                                // Update or add <font .../> tag
+                                let newInner = inner;
+                                if (/\<font[\s\S]*?\/>/.test(inner)) {
+                                    newInner = inner.replace(/<font([\s\S]*?)\/>/, (fm: string, fAttrs: string) => {
+                                        let newF = fAttrs;
+                                        if (elementData.fontSize !== undefined) {
+                                            if (/size="\d+"/.test(newF)) {
+                                                newF = newF.replace(/size="\d+"/, `size="${elementData.fontSize}"`);
+                                            } else {
+                                                newF = `${newF} size="${elementData.fontSize}"`;
+                                            }
+                                        }
+                                        if (elementData.isBold !== undefined) {
+                                            if (/isBold="(true|false)"/.test(newF)) {
+                                                newF = newF.replace(/isBold="(true|false)"/, `isBold="${elementData.isBold ? 'true' : 'false'}"`);
+                                            } else {
+                                                newF = `${newF} isBold="${elementData.isBold ? 'true' : 'false'}"`;
+                                            }
+                                        }
+                                        return `<font${newF} />`;
+                                    });
+                                } else {
+                                    // insert a font tag
+                                    const fontTag = `<font${elementData.fontSize !== undefined ? ` size="${elementData.fontSize}"` : ''}${elementData.isBold !== undefined ? ` isBold="${elementData.isBold ? 'true' : 'false'}"` : ''}/>`;
+                                    newInner = fontTag + newInner;
+                                }
+                                return `<textElement${tAttrs}>${newInner}</textElement>`;
+                            });
+                        }
+
+                        // Update appearance attributes like backcolor and mode
+                        if (elementData.backcolor !== undefined || elementData.mode !== undefined || elementData.forecolor !== undefined) {
+                            // update backcolor and mode on reportElement or textElement as appropriate
+                            finalParentBlock = finalParentBlock.replace(/<reportElement([\s\S]*?)\/?\s*>/, (repMatch: string) => {
+                                let repAttrs = repMatch.replace(/^<reportElement/, '').replace(/\/>$/, '').replace(/>$/, '');
+                                if (elementData.backcolor !== undefined) {
+                                    if (/backcolor="[^"]*"/.test(repAttrs)) {
+                                        repAttrs = repAttrs.replace(/backcolor="[^"]*"/, `backcolor="${elementData.backcolor}"`);
+                                    } else {
+                                        repAttrs = `${repAttrs} backcolor="${elementData.backcolor}"`;
+                                    }
+                                }
+                                if (elementData.mode !== undefined) {
+                                    if (/mode="[^"]*"/.test(repAttrs)) {
+                                        repAttrs = repAttrs.replace(/mode="[^"]*"/, `mode="${elementData.mode}"`);
+                                    } else {
+                                        repAttrs = `${repAttrs} mode="${elementData.mode}"`;
+                                    }
+                                }
+                                if (elementData.forecolor !== undefined) {
+                                    if (/forecolor="[^"]*"/.test(repAttrs)) {
+                                        repAttrs = repAttrs.replace(/forecolor="[^"]*"/, `forecolor="${elementData.forecolor}"`);
+                                    } else {
+                                        repAttrs = `${repAttrs} forecolor="${elementData.forecolor}"`;
+                                    }
+                                }
+                                return `<reportElement${repAttrs}>`;
+                            });
+                        }
+
+                        // Replace parent block in xmlContent
+                        xmlContent = xmlContent.substring(0, parentStart) + finalParentBlock + xmlContent.substring(parentEnd + parentEndTag.length);
+
+                        outputChannel.appendLine(`[EditorProvider] Parent block updated`);
+
+                        updated = true;
+                        break;
+                    }
+                }
+            }
+
+            // Update text content for staticText
+            if (updated && elementData.type === 'staticText' && elementData.text !== undefined) {
+                const staticTextRegex = new RegExp(
+                    `(<staticText[\\s\\S]*?<reportElement[^>]*x="${elementData.x}"[^>]*y="${elementData.y}"[^>]*[\\s\\S]*?<text>)((?:<\\!\\[CDATA\\[)?[\\s\\S]*?(?:\\]\\]>)?)(</text>)`,
+                    'g'
+                );
+                
+                xmlContent = xmlContent.replace(staticTextRegex, (match, before, oldText, after) => {
+                    outputChannel.appendLine(`[EditorProvider] Updating staticText content to: ${elementData.text}`);
+                    return `${before}<![CDATA[${elementData.text}]]>${after}`;
+                });
+            }
+
+            // Update expression for textField
+            if (updated && elementData.type === 'textField' && elementData.expression !== undefined) {
+                const textFieldRegex = new RegExp(
+                    `(<textField[\\s\\S]*?<reportElement[^>]*x="${elementData.x}"[^>]*y="${elementData.y}"[^>]*[\\s\\S]*?<textFieldExpression>)((?:<\\!\\[CDATA\\[)?[\\s\\S]*?(?:\\]\\]>)?)(</textFieldExpression>)`,
+                    'g'
+                );
+                
+                xmlContent = xmlContent.replace(textFieldRegex, (match, before, oldExpr, after) => {
+                    outputChannel.appendLine(`[EditorProvider] Updating textField expression to: ${elementData.expression}`);
+                    return `${before}<![CDATA[${elementData.expression}]]>${after}`;
+                });
+            }
+
+            if (!updated) {
+                outputChannel.appendLine(`[EditorProvider] WARNING: No element found at (${searchX}, ${searchY})`);
+                vscode.window.showWarningMessage(`Could not find element in file. Changes may not have been saved.`);
+                return;
+            }
+
+            // Check if content actually changed
+            if (xmlContent === originalXmlContent) {
+                outputChannel.appendLine(`[EditorProvider] WARNING: Content did not change!`);
+                vscode.window.showWarningMessage(`No changes detected in file content.`);
+                return;
+            }
+
+            outputChannel.appendLine(`[EditorProvider] Content changed, writing to file...`);
+            outputChannel.appendLine(`[EditorProvider] File URI: ${uri.toString()}`);
+
+            // Write the updated content back to the file
+            const encoder = new TextEncoder();
+            const uint8Array = encoder.encode(xmlContent);
+            await vscode.workspace.fs.writeFile(uri, uint8Array);
+            
+            outputChannel.appendLine(`[EditorProvider] File written successfully! (${uint8Array.length} bytes)`);
+            // Read back and log diagnostics to ensure content as expected
+            try {
+                const verifyBuf = await vscode.workspace.fs.readFile(uri);
+                const verifyText = Buffer.from(verifyBuf).toString('utf8');
+                const bandCount = (verifyText.match(/<band[\s>]/g) || []).length;
+                const textFieldCount = (verifyText.match(/<textField[\s>]/g) || []).length;
+                const staticTextCount = (verifyText.match(/<staticText[\s>]/g) || []).length;
+                outputChannel.appendLine(`[EditorProvider] Verify read - bands:${bandCount} textField:${textFieldCount} staticText:${staticTextCount}`);
+                const snippet = verifyText.substring(0, 2000).replace(/\n/g, '\\n');
+                outputChannel.appendLine(`[EditorProvider] File snippet (first 2000 chars): ${snippet}`);
+                // Try parsing and report number of bands parsed
+                try {
+                    const parsed = parseJrxml(verifyText);
+                    outputChannel.appendLine(`[EditorProvider] parseJrxml returned ${parsed.bands.length} bands`);
+                } catch (pErr) {
+                    outputChannel.appendLine(`[EditorProvider] parseJrxml error after write: ${pErr}`);
+                }
+            } catch (readErr) {
+                outputChannel.appendLine(`[EditorProvider] Error reading file after write: ${readErr}`);
+            }
+        } catch (error) {
+            outputChannel.appendLine(`[EditorProvider] Error updating element: ${error}`);
+            vscode.window.showErrorMessage(`Failed to update element: ${error}`);
+        }
     }
 }

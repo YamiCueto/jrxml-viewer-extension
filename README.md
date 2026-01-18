@@ -6,7 +6,7 @@ A professional Visual Studio Code extension for viewing and editing JasperReport
 
 **Created by Yamid Cueto for the Java and JasperReports community**
 
-![JRXML Viewer](https://img.shields.io/badge/version-0.1.8-blue.svg)
+![JRXML Viewer](https://img.shields.io/badge/version-0.1.9-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![VS Code](https://img.shields.io/badge/VS%20Code-1.85%2B-blue.svg)
 
@@ -256,8 +256,8 @@ If you have questions, suggestions, or find any bugs:
 
 ## 📊 Statistics
 
-- **Current version**: 0.1.8
-- **Release date**: January 12, 2026
+- **Current version**: 0.1.9
+- **Release date**: January 18, 2026
 - **Compatible with**: VS Code 1.85.0+
 - **License**: MIT
 - **Language**: TypeScript
@@ -267,7 +267,11 @@ If you have questions, suggestions, or find any bugs:
 
 See [CHANGELOG.md](./CHANGELOG.md) for detailed version history.
 
-### Latest Updates (v0.1.8)
+### Latest Updates (v0.1.9)
+- ✨ Added interactive editing from preview (drag & drop + properties panel edits)
+- 🔧 Migrated preview script to TypeScript and improved parser & save reliability
+ 
+### Previous (v0.1.8)
 - ✨ Added configurable default view setting
 - 🔧 Choose between visual preview or source code as default
 - ⚙️ New setting: `jrxml-viewer.defaultView` (preview/source)
