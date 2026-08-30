@@ -2,6 +2,7 @@ import {
     JrxmlDocument,
     JrxmlReport,
     JrxmlStyle,
+    JrxmlConditionalStyle,
     JrxmlParameter,
     JrxmlField,
     JrxmlVariable,
@@ -140,6 +141,33 @@ function serializeBox(box: JrxmlBox, indent: string): string {
     return `${indent}<box${attrStr}>\n${children.join('\n')}\n${indent}</box>`;
 }
 
+function serializeConditionalStyle(cs: JrxmlConditionalStyle, indent: string): string {
+    const s = cs.style;
+    const attrs: string[] = [];
+    if (s.fontName) {attrs.push(`fontName="${escapeXmlAttr(s.fontName)}"`);}
+    if (s.fontSize !== undefined) {attrs.push(`fontSize="${s.fontSize}"`);}
+    if (s.isBold) {attrs.push('isBold="true"');}
+    if (s.isItalic) {attrs.push('isItalic="true"');}
+    if (s.isUnderline) {attrs.push('isUnderline="true"');}
+    if (s.isStrikeThrough) {attrs.push('isStrikeThrough="true"');}
+    if (s.forecolor) {attrs.push(`forecolor="${escapeXmlAttr(s.forecolor)}"`);}
+    if (s.backcolor) {attrs.push(`backcolor="${escapeXmlAttr(s.backcolor)}"`);}
+    if (s.mode) {attrs.push(`mode="${escapeXmlAttr(s.mode)}"`);}
+    if (s.horizontalAlignment) {attrs.push(`hTextAlign="${escapeXmlAttr(s.horizontalAlignment)}"`);}
+    if (s.verticalAlignment) {attrs.push(`vTextAlign="${escapeXmlAttr(s.verticalAlignment)}"`);}
+    if (s.pattern) {attrs.push(`pattern="${escapeXmlAttr(s.pattern)}"`);}
+
+    const attrStr = attrs.length > 0 ? ` ${attrs.join(' ')}` : '';
+    const lines: string[] = [];
+    lines.push(`${indent}<conditionalStyle${attrStr}>`);
+    lines.push(`${indent}    <conditionExpression><![CDATA[${cs.conditionExpression.raw}]]></conditionExpression>`);
+    if (s.box) {
+        lines.push(serializeBox(s.box, indent + '    '));
+    }
+    lines.push(`${indent}</conditionalStyle>`);
+    return lines.join('\n');
+}
+
 function serializeStyle(style: JrxmlStyle, indent: string): string {
     const attrs: string[] = [`name="${escapeXmlAttr(style.name)}"`];
     if (style.isDefault) {attrs.push('isDefault="true"');}
@@ -157,8 +185,18 @@ function serializeStyle(style: JrxmlStyle, indent: string): string {
     if (style.verticalAlignment) {attrs.push(`vTextAlign="${escapeXmlAttr(style.verticalAlignment)}"`);}
     if (style.pattern) {attrs.push(`pattern="${escapeXmlAttr(style.pattern)}"`);}
 
+    const children: string[] = [];
     if (style.box) {
-        return `${indent}<style ${attrs.join(' ')}>\n${serializeBox(style.box, indent + '    ')}\n${indent}</style>`;
+        children.push(serializeBox(style.box, indent + '    '));
+    }
+    if (style.conditionalStyles) {
+        for (const cs of style.conditionalStyles) {
+            children.push(serializeConditionalStyle(cs, indent + '    '));
+        }
+    }
+
+    if (children.length > 0) {
+        return `${indent}<style ${attrs.join(' ')}>\n${children.join('\n')}\n${indent}</style>`;
     }
     return `${indent}<style ${attrs.join(' ')}/>`;
 }
@@ -204,8 +242,9 @@ function serializeGroup(g: JrxmlGroup, indent: string): string {
     lines.push(`${indent}    <groupExpression><![CDATA[${g.expression.raw}]]></groupExpression>`);
 
     if (g.groupHeader) {
+        const splitAttr = g.groupHeader.splitType ? ` splitType="${escapeXmlAttr(g.groupHeader.splitType)}"` : '';
         lines.push(`${indent}    <groupHeader>`);
-        lines.push(`${indent}        <band height="${g.groupHeader.height}">`);
+        lines.push(`${indent}        <band height="${g.groupHeader.height}"${splitAttr}>`);
         for (const el of g.groupHeader.elements) {
             lines.push(serializeElement(el, indent + '            '));
         }
@@ -214,8 +253,9 @@ function serializeGroup(g: JrxmlGroup, indent: string): string {
     }
 
     if (g.groupFooter) {
+        const splitAttr = g.groupFooter.splitType ? ` splitType="${escapeXmlAttr(g.groupFooter.splitType)}"` : '';
         lines.push(`${indent}    <groupFooter>`);
-        lines.push(`${indent}        <band height="${g.groupFooter.height}">`);
+        lines.push(`${indent}        <band height="${g.groupFooter.height}"${splitAttr}>`);
         for (const el of g.groupFooter.elements) {
             lines.push(serializeElement(el, indent + '            '));
         }
@@ -228,21 +268,19 @@ function serializeGroup(g: JrxmlGroup, indent: string): string {
 }
 
 function serializeReportElement(el: JrxmlElement, indent: string): string {
-    const geom = el.geometry;
     const attrs: string[] = [];
-
-    if (el.styleName) {attrs.push(`style="${escapeXmlAttr(el.styleName)}"`);}
-    attrs.push(`x="${geom.x}"`);
-    attrs.push(`y="${geom.y}"`);
-    attrs.push(`width="${geom.width}"`);
-    attrs.push(`height="${geom.height}"`);
-
     if (el.uuid) {attrs.push(`uuid="${escapeXmlAttr(el.uuid)}"`);}
+    attrs.push(`x="${el.geometry.x}"`);
+    attrs.push(`y="${el.geometry.y}"`);
+    attrs.push(`width="${el.geometry.width}"`);
+    attrs.push(`height="${el.geometry.height}"`);
+
+    if (el.geometry.positionType) {attrs.push(`positionType="${escapeXmlAttr(el.geometry.positionType)}"`);}
+    if (el.geometry.stretchType) {attrs.push(`stretchType="${escapeXmlAttr(el.geometry.stretchType)}"`);}
+    if (el.styleName) {attrs.push(`style="${escapeXmlAttr(el.styleName)}"`);}
+    if (el.mode) {attrs.push(`mode="${escapeXmlAttr(el.mode)}"`);}
     if (el.forecolor) {attrs.push(`forecolor="${escapeXmlAttr(el.forecolor)}"`);}
     if (el.backcolor) {attrs.push(`backcolor="${escapeXmlAttr(el.backcolor)}"`);}
-    if (el.mode) {attrs.push(`mode="${escapeXmlAttr(el.mode)}"`);}
-    if (geom.positionType) {attrs.push(`positionType="${escapeXmlAttr(geom.positionType)}"`);}
-    if (geom.stretchType) {attrs.push(`stretchType="${escapeXmlAttr(geom.stretchType)}"`);}
 
     if (el.printWhenExpression) {
         return `${indent}<reportElement ${attrs.join(' ')}>\n${indent}    <printWhenExpression><![CDATA[${el.printWhenExpression.raw}]]></printWhenExpression>\n${indent}</reportElement>`;
@@ -375,6 +413,42 @@ export function serializeElement(el: JrxmlElement, indent: string): string {
                 }
             }
             lines.push(`${indent}</elementGroup>`);
+            return lines.join('\n');
+        }
+
+        case 'componentElement': {
+            const lines: string[] = [`${indent}<componentElement>`];
+            lines.push(serializeReportElement(el, indent + '    '));
+            if (el.box) {lines.push(serializeBox(el.box, indent + '    '));}
+
+            if (el.barcodeComponent) {
+                const bc = el.barcodeComponent;
+                const bcAttrs: string[] = [
+                    'xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components"',
+                    'xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd"'
+                ];
+                if (bc.evaluationTime) {bcAttrs.push(`evaluationTime="${escapeXmlAttr(bc.evaluationTime)}"`);}
+                if (bc.drawText !== undefined) {bcAttrs.push(`drawText="${bc.drawText}"`);}
+                if (bc.checksumRequired) {bcAttrs.push('checksumRequired="true"');}
+                if (bc.errorCorrectionLevel) {bcAttrs.push(`errorCorrectionLevel="${escapeXmlAttr(bc.errorCorrectionLevel)}"`);}
+                if (bc.barWidth !== undefined) {bcAttrs.push(`barWidth="${bc.barWidth}"`);}
+                if (bc.barHeight !== undefined) {bcAttrs.push(`barHeight="${bc.barHeight}"`);}
+                if (bc.quietZone !== undefined) {bcAttrs.push(`quietZone="${bc.quietZone}"`);}
+                if (bc.orientation) {bcAttrs.push(`orientation="${escapeXmlAttr(bc.orientation)}"`);}
+
+                const tagName = bc.barcodeType === 'QRCode' ? 'jr:QRCode' :
+                    bc.barcodeType === 'Code128' ? 'jr:Code128' :
+                    bc.barcodeType === 'EAN13' ? 'jr:EAN13' :
+                    bc.barcodeType === 'Code39' ? 'jr:Code39' :
+                    'jr:QRCode';
+
+                const exprVal = bc.codeExpression?.raw || '';
+                lines.push(`${indent}    <${tagName} ${bcAttrs.join(' ')}>`);
+                lines.push(`${indent}        <jr:codeExpression><![CDATA[${exprVal}]]></jr:codeExpression>`);
+                lines.push(`${indent}    </${tagName}>`);
+            }
+
+            lines.push(`${indent}</componentElement>`);
             return lines.join('\n');
         }
 

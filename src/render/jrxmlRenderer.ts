@@ -8,6 +8,7 @@ import {
 import { renderChartSvg } from './charts/jrxmlChartRenderer';
 import { resolveChartData } from './charts/jrxmlChartData';
 import { createDefaultPreviewDataset } from '../expression/jrxmlEvaluationContext';
+import { renderBarcodeSvg } from './barcodes/jrxmlBarcodeRenderer';
 
 export function renderLayoutDocument(layout: LayoutResult): string {
     const pagesHtml = layout.pages.map(page => renderPage(page, layout.pageWidth, layout.pageHeight)).join('\n');
@@ -108,69 +109,71 @@ export function renderElement(el: LayoutElement): string {
         styles.push('text-decoration: line-through');
     }
 
-    const hAlign = source.horizontalAlignment || style.horizontalAlignment;
-    let justifyProp = 'flex-start';
-    if (hAlign) {
-        const alignMap: Record<string, string> = {
-            Left: 'left',
-            Center: 'center',
-            Right: 'right',
-            Justified: 'justify'
-        };
-        const textAlign = alignMap[hAlign] || hAlign.toLowerCase();
-        styles.push(`text-align: ${textAlign}`);
-        if (hAlign === 'Center') {justifyProp = 'center';}
-        else if (hAlign === 'Right') {justifyProp = 'flex-end';}
-        else if (hAlign === 'Justified') {justifyProp = 'space-between';}
+    const box = style.box || source.box;
+    if (box) {
+        if (box.topPadding !== undefined) {styles.push(`padding-top: ${box.topPadding}px`);}
+        if (box.bottomPadding !== undefined) {styles.push(`padding-bottom: ${box.bottomPadding}px`);}
+        if (box.leftPadding !== undefined) {styles.push(`padding-left: ${box.leftPadding}px`);}
+        if (box.rightPadding !== undefined) {styles.push(`padding-right: ${box.rightPadding}px`);}
+
+        if (box.pen?.lineWidth) {
+            const penColor = box.pen.lineColor || forecolor || '#000000';
+            const penStyle = mapLineStyle(box.pen.lineStyle);
+            styles.push(`border: ${box.pen.lineWidth}px ${penStyle} ${penColor}`);
+        } else {
+            if (box.topPen?.lineWidth) {
+                styles.push(`border-top: ${box.topPen.lineWidth}px ${mapLineStyle(box.topPen.lineStyle)} ${box.topPen.lineColor || forecolor || '#000000'}`);
+            }
+            if (box.bottomPen?.lineWidth) {
+                styles.push(`border-bottom: ${box.bottomPen.lineWidth}px ${mapLineStyle(box.bottomPen.lineStyle)} ${box.bottomPen.lineColor || forecolor || '#000000'}`);
+            }
+            if (box.leftPen?.lineWidth) {
+                styles.push(`border-left: ${box.leftPen.lineWidth}px ${mapLineStyle(box.leftPen.lineStyle)} ${box.leftPen.lineColor || forecolor || '#000000'}`);
+            }
+            if (box.rightPen?.lineWidth) {
+                styles.push(`border-right: ${box.rightPen.lineWidth}px ${mapLineStyle(box.rightPen.lineStyle)} ${box.rightPen.lineColor || forecolor || '#000000'}`);
+            }
+        }
     }
 
-    const vAlign = source.verticalAlignment || style.verticalAlignment;
-    let alignProp = 'center';
-    if (vAlign) {
-        if (vAlign === 'Top') {alignProp = 'flex-start';}
-        else if (vAlign === 'Bottom') {alignProp = 'flex-end';}
-        else if (vAlign === 'Middle' || vAlign === 'Center') {alignProp = 'center';}
+    const hAlign = source.horizontalAlignment || style.horizontalAlignment || 'Left';
+    const vAlign = source.verticalAlignment || style.verticalAlignment || 'Top';
+
+    let justifyContent = 'flex-start';
+    if (hAlign === 'Center' || hAlign === 'center') {
+        justifyContent = 'center';
+    } else if (hAlign === 'Right' || hAlign === 'right') {
+        justifyContent = 'flex-end';
+    } else if (hAlign === 'Justified' || hAlign === 'justified') {
+        justifyContent = 'space-between';
+    }
+
+    let alignItems = 'flex-start';
+    if (vAlign === 'Middle' || vAlign === 'middle' || vAlign === 'Center' || vAlign === 'center') {
+        alignItems = 'center';
+    } else if (vAlign === 'Bottom' || vAlign === 'bottom') {
+        alignItems = 'flex-end';
+    }
+
+    let textAlign = 'left';
+    if (hAlign === 'Center' || hAlign === 'center') {
+        textAlign = 'center';
+    } else if (hAlign === 'Right' || hAlign === 'right') {
+        textAlign = 'right';
+    } else if (hAlign === 'Justified' || hAlign === 'justified') {
+        textAlign = 'justify';
     }
 
     const rotation = source.rotation || style.rotation;
-    if (rotation) {
-        if (rotation === 'Left') {
-            styles.push('writing-mode: vertical-rl; transform: rotate(180deg)');
-        } else if (rotation === 'Right') {
-            styles.push('writing-mode: vertical-rl');
-        } else if (rotation === 'UpsideDown') {
-            styles.push('transform: rotate(180deg)');
-        }
+    if (rotation === 'Left') {
+        styles.push('writing-mode: vertical-rl; transform: rotate(180deg)');
+    } else if (rotation === 'Right') {
+        styles.push('writing-mode: vertical-rl');
+    } else if (rotation === 'UpsideDown') {
+        styles.push('transform: rotate(180deg)');
     }
 
-    const box = source.box || style.box;
-    let paddingStyles = '';
-    if (box) {
-        if (box.topPen?.lineWidth) {
-            styles.push(`border-top: ${box.topPen.lineWidth}px ${mapLineStyle(box.topPen.lineStyle)} ${box.topPen.lineColor || '#000000'}`);
-        }
-        if (box.bottomPen?.lineWidth) {
-            styles.push(`border-bottom: ${box.bottomPen.lineWidth}px ${mapLineStyle(box.bottomPen.lineStyle)} ${box.bottomPen.lineColor || '#000000'}`);
-        }
-        if (box.leftPen?.lineWidth) {
-            styles.push(`border-left: ${box.leftPen.lineWidth}px ${mapLineStyle(box.leftPen.lineStyle)} ${box.leftPen.lineColor || '#000000'}`);
-        }
-        if (box.rightPen?.lineWidth) {
-            styles.push(`border-right: ${box.rightPen.lineWidth}px ${mapLineStyle(box.rightPen.lineStyle)} ${box.rightPen.lineColor || '#000000'}`);
-        }
-        if (box.pen?.lineWidth) {
-            styles.push(`border: ${box.pen.lineWidth}px ${mapLineStyle(box.pen.lineStyle)} ${box.pen.lineColor || '#000000'}`);
-        }
-        const topP = box.topPadding || 0;
-        const rightP = box.rightPadding || 0;
-        const bottomP = box.bottomPadding || 0;
-        const leftP = box.leftPadding || 0;
-        if (topP || rightP || bottomP || leftP) {
-            paddingStyles = `padding: ${topP}px ${rightP}px ${bottomP}px ${leftP}px;`;
-        }
-    }
-
-    const contentStyle = `display: flex; width: 100%; height: 100%; justify-content: ${justifyProp}; align-items: ${alignProp}; box-sizing: border-box; ${paddingStyles}`;
+    const contentStyle = `display: flex; width: 100%; height: 100%; justify-content: ${justifyContent}; align-items: ${alignItems}; text-align: ${textAlign}; overflow: hidden;`;
 
     const elementPayload = {
         id: el.id,
@@ -183,12 +186,15 @@ export function renderElement(el: LayoutElement): string {
         width: geometry.width,
         height: geometry.height,
         text: source.text,
-        expression: source.expression?.raw || source.subreportExpression?.raw || source.imageExpression?.raw,
+        expression: source.expression?.raw || source.subreportExpression?.raw || source.imageExpression?.raw || source.barcodeComponent?.codeExpression?.raw,
         displayValue: el.displayValue,
         pattern: source.pattern || style.pattern,
         fontName: fontName,
         fontSize: fontSize,
         isBold: isBold,
+        isItalic: isItalic,
+        isUnderline: isUnderline,
+        isStrikeThrough: isStrikeThrough,
         forecolor: forecolor,
         backcolor: backcolor,
         mode: mode,
@@ -289,6 +295,37 @@ export function renderElement(el: LayoutElement): string {
             </div>`;
         }
 
+        case 'componentElement': {
+            if (source.componentType === 'barcode' && source.barcodeComponent) {
+                const bc = source.barcodeComponent;
+                const exprText = bc.codeExpression?.raw || 'Barcode';
+                const evaluatedVal = el.displayValue !== undefined ? el.displayValue : exprText.replace(/^"|"$/g, '');
+                const barcodeSvg = renderBarcodeSvg({
+                    barcodeType: bc.barcodeType,
+                    value: evaluatedVal,
+                    width: geometry.width,
+                    height: geometry.height,
+                    drawText: bc.drawText,
+                    errorCorrectionLevel: bc.errorCorrectionLevel,
+                    barWidth: bc.barWidth,
+                    barHeight: bc.barHeight
+                });
+
+                styles.push('overflow: hidden');
+                const styleStr = styles.join('; ');
+                return `<div id="${el.id}" class="element element-barcode clickable" style="${styleStr}" ${dataAttrs} title="${bc.barcodeType}: ${escapeHtml(evaluatedVal)}">
+                    <div style="width: 100%; height: 100%; pointer-events: none;">
+                        ${barcodeSvg}
+                    </div>
+                </div>`;
+            }
+
+            const styleStr = styles.join('; ');
+            return `<div id="${el.id}" class="element element-component clickable" style="${styleStr}" ${dataAttrs} title="Component">
+                <div class="element-content">Component</div>
+            </div>`;
+        }
+
         case 'subreport': {
             const styleStr = styles.join('; ');
             const exprText = source.subreportExpression?.raw || 'Subreport';
@@ -350,7 +387,8 @@ function renderFormattedMarkup(text: string, markupType?: string): string {
             .replace(/&amp;/g, '&')
             .replace(/&lt;/g, '<')
             .replace(/&gt;/g, '>')
-            .replace(/&quot;/g, '"');
+            .replace(/&quot;/g, '"')
+            .replace(/&apos;/g, "'");
     }
 
     const hasStyledTags = /<(style|b|i|u|font)(\s[^>]*)?>[\s\S]*?<\/\1>/i.test(decoded);

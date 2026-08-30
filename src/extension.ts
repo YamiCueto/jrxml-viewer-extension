@@ -155,7 +155,6 @@ export function activate(context: vscode.ExtensionContext) {
     outputChannel.appendLine('===========================================');
     outputChannel.appendLine('JRXML Viewer Extension Activated! ✓');
     outputChannel.appendLine('===========================================');
-    outputChannel.show(true); // Show the output channel
 }
 
 export function deactivate() {

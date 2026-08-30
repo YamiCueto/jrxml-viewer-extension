@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
-const { parseJrxml } = require('../../out/jrxmlParser');
 const { parseJrxmlDocument } = require('../../out/model/jrxmlDocumentParser');
 const { layoutJrxmlDocument } = require('../../out/layout/jrxmlLayoutEngine');
 const { renderLayoutDocument } = require('../../out/render/jrxmlRenderer');
@@ -10,7 +9,7 @@ function generateHarnessHtml(jrxmlContent, customOptions = {}) {
     const doc = parseJrxmlDocument(jrxmlContent);
     const layout = layoutJrxmlDocument(doc);
     const renderedCanvas = renderLayoutDocument(layout);
-    const reportData = parseJrxml(jrxmlContent);
+    const reportData = doc.report;
 
     const previewCssPath = path.join(__dirname, '..', '..', 'media', 'preview.css');
     const previewCss = fs.readFileSync(previewCssPath, 'utf8');
@@ -111,21 +110,10 @@ function generateHarnessHtml(jrxmlContent, customOptions = {}) {
     <style>${previewCss}</style>
 </head>
 <body>
+    ${webviewBody}
     <script>
-        window.acquireVsCodeApi = function() {
-            return {
-                postMessage: function(msg) {
-                    window.__lastMessage = msg;
-                    window.dispatchEvent(new CustomEvent('vscode-message', { detail: msg }));
-                },
-                getState: function() { return {}; },
-                setState: function() {}
-            };
-        };
-        window.reportData = ${JSON.stringify(reportData)};
         window.layoutResult = ${JSON.stringify(layout)};
     </script>
-    ${webviewBody}
     <script>${previewJs}</script>
 </body>
 </html>`;
@@ -133,33 +121,35 @@ function generateHarnessHtml(jrxmlContent, customOptions = {}) {
 
     const workbenchCss = `
         :root {
-            --vscode-activitybar-bg: #333333;
+            --vscode-bg: #1e1e1e;
             --vscode-sidebar-bg: #252526;
+            --vscode-activitybar-bg: #333333;
             --vscode-editor-bg: #1e1e1e;
-            --vscode-statusbar-bg: #007acc;
             --vscode-tab-active-bg: #1e1e1e;
             --vscode-tab-inactive-bg: #2d2d2d;
-            --vscode-tab-border: #252526;
-            --vscode-text-muted: #858585;
+            --vscode-statusbar-bg: #007acc;
+            --vscode-border: #3c3c3c;
             --vscode-tree-hover: #2a2d2e;
+            --vscode-text: #cccccc;
         }
-        body {
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            overflow: hidden;
+            user-select: none;
+        }
+        body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #181818;
-            color: #cccccc;
+            background-color: var(--vscode-bg);
+            color: var(--vscode-text);
             height: 100vh;
-            width: 100vw;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            user-select: none;
         }
         .workbench-layout {
             display: flex;
             flex: 1;
-            height: calc(100vh - 24px);
             overflow: hidden;
         }
         .activity-bar {
@@ -168,33 +158,30 @@ function generateHarnessHtml(jrxmlContent, customOptions = {}) {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding-top: 10px;
+            padding-top: 8px;
             gap: 16px;
-            border-right: 1px solid #222;
             flex-shrink: 0;
+            border-right: 1px solid var(--vscode-border);
         }
         .activity-icon {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             border-radius: 4px;
             color: #858585;
-            font-size: 16px;
+            font-size: 18px;
         }
         .activity-icon.active {
             color: #ffffff;
             border-left: 2px solid #ffffff;
         }
-        .activity-icon:hover {
-            color: #ffffff;
-        }
         .primary-sidebar {
             width: 260px;
             background: var(--vscode-sidebar-bg);
-            border-right: 1px solid #333333;
+            border-right: 1px solid var(--vscode-border);
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
@@ -438,7 +425,6 @@ function generateHarnessHtml(jrxmlContent, customOptions = {}) {
                 setState: function() {}
             };
         };
-        window.reportData = ${JSON.stringify(reportData)};
         window.layoutResult = ${JSON.stringify(layout)};
     </script>
     <script>${previewJs}</script>
@@ -450,18 +436,22 @@ function startHarnessServer(jrxmlContent, options = {}) {
     const port = options.port || 9876;
     const html = generateHarnessHtml(jrxmlContent, options);
 
-    const server = http.createServer((req, res) => {
-        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end(html);
-    });
+    return new Promise((resolve, reject) => {
+        const server = http.createServer((req, res) => {
+            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.end(html);
+        });
 
-    return new Promise((resolve) => {
         server.listen(port, () => {
             resolve({
                 server,
                 port,
                 url: `http://localhost:${port}`
             });
+        });
+
+        server.on('error', (err) => {
+            reject(err);
         });
     });
 }

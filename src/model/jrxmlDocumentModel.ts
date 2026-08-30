@@ -22,6 +22,11 @@ export interface JrxmlReport {
     queryString?: string;
 }
 
+export interface JrxmlConditionalStyle {
+    conditionExpression: JrxmlExpression;
+    style: Partial<JrxmlStyle>;
+}
+
 export interface JrxmlStyle {
     name: string;
     isDefault?: boolean;
@@ -39,6 +44,7 @@ export interface JrxmlStyle {
     verticalAlignment?: string;
     pattern?: string;
     box?: JrxmlBox;
+    conditionalStyles?: JrxmlConditionalStyle[];
 }
 
 export interface JrxmlParameter {
@@ -134,10 +140,28 @@ export interface JrxmlPieDataset {
     labelExpression?: JrxmlExpression;
 }
 
+export type JrxmlBarcodeType = 'QRCode' | 'Code128' | 'EAN13' | 'Code39' | 'unknown';
+
+export interface JrxmlBarcodeComponent {
+    barcodeType: JrxmlBarcodeType;
+    codeExpression?: JrxmlExpression;
+    evaluationTime?: string;
+    drawText?: boolean;
+    checksumRequired?: boolean;
+    barWidth?: number;
+    barHeight?: number;
+    errorCorrectionLevel?: string;
+    moduleWidth?: number;
+    quietZone?: number;
+    orientation?: string;
+}
+
 export interface JrxmlElement {
     id?: string;
     uuid?: string;
     type: string;
+    componentType?: 'barcode' | 'table' | 'map' | 'list';
+    barcodeComponent?: JrxmlBarcodeComponent;
     chartType?: string;
     geometry: JrxmlGeometry;
     styleName?: string;

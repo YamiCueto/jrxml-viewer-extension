@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { parseJrxml, JrxmlReport } from './jrxmlParser';
 import { parseJrxmlDocument } from './model/jrxmlDocumentParser';
 import { JrxmlDocument } from './model/jrxmlDocumentModel';
 import { layoutJrxmlDocument } from './layout/jrxmlLayoutEngine';
@@ -52,7 +51,6 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
         const jrxmlText = Buffer.from(jrxmlContent).toString('utf8');
 
         let currentDoc: JrxmlDocument | null = null;
-        let reportData: JrxmlReport | null = null;
         let layoutResult: LayoutResult | null = null;
         let renderedHtml = '';
         let parseError: string | null = null;
@@ -61,7 +59,6 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
             currentDoc = parseJrxmlDocument(jrxmlText);
             layoutResult = layoutJrxmlDocument(currentDoc);
             renderedHtml = renderLayoutDocument(layoutResult);
-            reportData = parseJrxml(jrxmlText);
         } catch (error) {
             parseError = error instanceof Error ? error.message : 'Unknown parsing error';
             outputChannel.appendLine(`[EditorProvider] Parsing error: ${parseError}`);
@@ -69,7 +66,7 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
 
         webviewPanel.webview.html = this.getHtmlForWebview(
             webviewPanel.webview,
-            reportData,
+            currentDoc,
             layoutResult,
             renderedHtml,
             parseError
@@ -82,7 +79,7 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
                         vscode.window.showInformationMessage(message.text);
                         break;
                     case 'exportHtml':
-                        this.exportToHtml(layoutResult, reportData, document.uri);
+                        this.exportToHtml(layoutResult, currentDoc, document.uri);
                         break;
                     case 'editElement':
                         vscode.window.showInformationMessage(`Editing: ${message.elementType} at (${message.x}, ${message.y})`);
@@ -138,11 +135,10 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
 
                                 layoutResult = layoutJrxmlDocument(currentDoc);
                                 renderedHtml = renderLayoutDocument(layoutResult);
-                                reportData = parseJrxml(newXml);
 
                                 webviewPanel.webview.html = this.getHtmlForWebview(
                                     webviewPanel.webview,
-                                    reportData,
+                                    currentDoc,
                                     layoutResult,
                                     renderedHtml,
                                     null
@@ -164,7 +160,7 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
 
     private getHtmlForWebview(
         webview: vscode.Webview,
-        reportData: JrxmlReport | null,
+        doc: JrxmlDocument | null,
         layoutResult: LayoutResult | null,
         renderedHtml: string,
         parseError: string | null
@@ -189,10 +185,9 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
 </head>
 <body>
     <div id="app">
-        ${parseError ? this.getErrorHtml(parseError) : this.getReportHtml(reportData!, layoutResult!, renderedHtml)}
+        ${parseError ? this.getErrorHtml(parseError) : this.getReportHtml(doc!, layoutResult!, renderedHtml)}
     </div>
     <script nonce="${nonce}">
-        window.reportData = ${JSON.stringify(reportData)};
         window.layoutResult = ${JSON.stringify(layoutResult)};
     </script>
     <script nonce="${nonce}" src="${scriptUri}"></script>
@@ -209,7 +204,8 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
         `;
     }
 
-    private getReportHtml(report: JrxmlReport, layout: LayoutResult, renderedHtml: string): string {
+    private getReportHtml(doc: JrxmlDocument, layout: LayoutResult, renderedHtml: string): string {
+        const report = doc.report;
         return `
             <div class="toolbar">
                 <div class="toolbar-section">
@@ -299,13 +295,13 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
         return text;
     }
 
-    private async exportToHtml(layoutResult: LayoutResult | null, reportData: JrxmlReport | null, uri: vscode.Uri): Promise<void> {
-        if (!layoutResult && !reportData) {
+    private async exportToHtml(layoutResult: LayoutResult | null, doc: JrxmlDocument | null, uri: vscode.Uri): Promise<void> {
+        if (!layoutResult && !doc) {
             vscode.window.showErrorMessage('No report data to export');
             return;
         }
 
-        const htmlContent = layoutResult ? this.generateStandaloneHtmlFromLayout(layoutResult) : this.generateLegacyStandaloneHtml(reportData!);
+        const htmlContent = this.generateStandaloneHtmlFromLayout(layoutResult || layoutJrxmlDocument(doc!));
         const fileName = uri.fsPath.replace('.jrxml', '_export.html');
         const exportUri = vscode.Uri.file(fileName);
 
@@ -349,26 +345,6 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
 </head>
 <body>
     ${renderedPages}
-</body>
-</html>`;
-    }
-
-    private generateLegacyStandaloneHtml(report: JrxmlReport): string {
-        return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${report.name} - JRXML Report</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
-        .report-container { background: white; padding: 20px; max-width: ${report.pageWidth}px; margin: 0 auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    </style>
-</head>
-<body>
-    <div class="report-container">
-        <h1>${report.name}</h1>
-    </div>
 </body>
 </html>`;
     }

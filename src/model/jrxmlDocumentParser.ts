@@ -3,6 +3,9 @@ import {
     JrxmlDocument,
     JrxmlReport,
     JrxmlStyle,
+    JrxmlConditionalStyle,
+    JrxmlBarcodeComponent,
+    JrxmlBarcodeType,
     JrxmlParameter,
     JrxmlField,
     JrxmlVariable,
@@ -29,6 +32,8 @@ export function parseJrxmlDocument(xmlContent: string): JrxmlDocument {
             return [
                 'property',
                 'style',
+                'conditionalStyle',
+                'componentElement',
                 'parameter',
                 'field',
                 'variable',
@@ -119,32 +124,39 @@ function assignStructuralIds(doc: JrxmlDocument): void {
 function assignIdsToElements(elements: JrxmlElement[], prefix: string): void {
     for (let i = 0; i < elements.length; i++) {
         const el = elements[i];
-        const currentId = `${prefix}/el:${i}`;
-        el.id = currentId;
+        el.id = `${prefix}/el:${i}`;
         if (el.children && el.children.length > 0) {
-            assignIdsToElements(el.children, currentId);
+            assignIdsToElements(el.children, el.id);
         }
     }
 }
 
-
-function toArray<T = any>(node: any): T[] {
-    if (node === undefined || node === null) {return [];}
-    return Array.isArray(node) ? node : [node];
+function toArray(val: any): any[] {
+    if (val === undefined || val === null) {
+        return [];
+    }
+    return Array.isArray(val) ? val : [val];
 }
 
-function extractFirst(node: any): any {
-    if (node === undefined || node === null) {return undefined;}
-    return Array.isArray(node) ? node[0] : node;
+function extractFirst(val: any): any {
+    if (Array.isArray(val)) {
+        return val[0];
+    }
+    return val;
 }
 
 function extractText(node: any): string | undefined {
-    if (node === undefined || node === null) {return undefined;}
-    const target = Array.isArray(node) ? node[0] : node;
-    if (typeof target === 'string') {return target;}
-    if (typeof target === 'number' || typeof target === 'boolean') {return String(target);}
-    if (typeof target === 'object' && target['#text'] !== undefined) {
-        return String(target['#text']);
+    if (node === undefined || node === null) {
+        return undefined;
+    }
+    if (typeof node === 'string') {
+        return node;
+    }
+    if (typeof node === 'number' || typeof node === 'boolean') {
+        return String(node);
+    }
+    if (node['#text'] !== undefined) {
+        return String(node['#text']);
     }
     return undefined;
 }
@@ -211,6 +223,40 @@ function parseBox(boxNode: any): JrxmlBox | undefined {
     };
 }
 
+function parseConditionalStyles(styleNode: any): JrxmlConditionalStyle[] | undefined {
+    const condNodes = toArray(styleNode.conditionalStyle);
+    if (condNodes.length === 0) {return undefined;}
+
+    const result: JrxmlConditionalStyle[] = [];
+    for (const cn of condNodes) {
+        const condExpr = parseExpression(cn.conditionExpression);
+        if (!condExpr) {continue;}
+
+        const subStyle = extractFirst(cn.style) || cn;
+        const font = extractFirst(subStyle.font);
+
+        result.push({
+            conditionExpression: condExpr,
+            style: {
+                fontName: subStyle['@_fontName'] || font?.['@_fontName'] || undefined,
+                fontSize: subStyle['@_fontSize'] !== undefined ? parseInt(subStyle['@_fontSize'], 10) : (font?.['@_size'] !== undefined ? parseInt(font['@_size'], 10) : undefined),
+                isBold: subStyle['@_isBold'] === 'true' || subStyle['@_isBold'] === true || font?.['@_isBold'] === 'true' || font?.['@_isBold'] === true || undefined,
+                isItalic: subStyle['@_isItalic'] === 'true' || subStyle['@_isItalic'] === true || font?.['@_isItalic'] === 'true' || font?.['@_isItalic'] === true || undefined,
+                isUnderline: subStyle['@_isUnderline'] === 'true' || subStyle['@_isUnderline'] === true || font?.['@_isUnderline'] === 'true' || font?.['@_isUnderline'] === true || undefined,
+                isStrikeThrough: subStyle['@_isStrikeThrough'] === 'true' || subStyle['@_isStrikeThrough'] === true || font?.['@_isStrikeThrough'] === 'true' || font?.['@_isStrikeThrough'] === true || undefined,
+                forecolor: subStyle['@_forecolor'] || undefined,
+                backcolor: subStyle['@_backcolor'] || undefined,
+                mode: subStyle['@_mode'] || undefined,
+                horizontalAlignment: subStyle['@_hTextAlign'] || subStyle['@_hAlign'] || subStyle['@_horizontalAlignment'] || undefined,
+                verticalAlignment: subStyle['@_vTextAlign'] || subStyle['@_vAlign'] || subStyle['@_verticalAlignment'] || undefined,
+                pattern: subStyle['@_pattern'] || undefined,
+                box: parseBox(subStyle.box)
+            }
+        });
+    }
+    return result.length > 0 ? result : undefined;
+}
+
 function parseStyles(reportNode: any): JrxmlStyle[] {
     const styles: JrxmlStyle[] = [];
     const styleNodes = toArray(reportNode.style);
@@ -231,7 +277,8 @@ function parseStyles(reportNode: any): JrxmlStyle[] {
             horizontalAlignment: s['@_hTextAlign'] || s['@_hAlign'] || s['@_horizontalAlignment'] || undefined,
             verticalAlignment: s['@_vTextAlign'] || s['@_vAlign'] || s['@_verticalAlignment'] || undefined,
             pattern: s['@_pattern'] || undefined,
-            box: parseBox(s.box)
+            box: parseBox(s.box),
+            conditionalStyles: parseConditionalStyles(s)
         });
     }
     return styles;
@@ -323,13 +370,9 @@ function parseGroups(reportNode: any): JrxmlGroup[] {
     return groups;
 }
 
-function parseQueryString(reportNode: any): string | undefined {
-    return extractText(reportNode.queryString);
-}
-
 function parseBands(reportNode: any): JrxmlBand[] {
     const bands: JrxmlBand[] = [];
-    const standardBandTypes = [
+    const bandTypes = [
         'background',
         'title',
         'pageHeader',
@@ -337,34 +380,35 @@ function parseBands(reportNode: any): JrxmlBand[] {
         'detail',
         'columnFooter',
         'pageFooter',
+        'lastPageFooter',
         'summary',
         'noData'
     ];
 
-    for (const bType of standardBandTypes) {
-        const bandContainer = reportNode[bType];
-        if (bandContainer) {
-            const bandList = toArray(bandContainer.band || bandContainer);
-            for (const b of bandList) {
-                bands.push({
-                    type: bType,
-                    height: parseInt(b['@_height'] || '0', 10),
-                    splitType: b['@_splitType'] || undefined,
-                    elements: parseElementsFromContainer(b)
-                });
-            }
+    for (const bt of bandTypes) {
+        const container = reportNode[bt];
+        if (!container) {continue;}
+
+        const bandNodes = toArray(container.band !== undefined ? container.band : container);
+        for (const b of bandNodes) {
+            bands.push({
+                type: bt,
+                height: parseInt(b['@_height'] || '0', 10),
+                splitType: b['@_splitType'] || undefined,
+                elements: parseElementsFromContainer(b)
+            });
         }
     }
 
     const groupNodes = toArray(reportNode.group);
     for (const g of groupNodes) {
-        const groupName = g['@_name'] || 'group';
+        const gName = g['@_name'] || 'group';
         if (g.groupHeader) {
-            const gBands = toArray(g.groupHeader.band || g.groupHeader);
-            for (const b of gBands) {
+            const bNodes = toArray(g.groupHeader.band || g.groupHeader);
+            for (const b of bNodes) {
                 bands.push({
-                    type: `groupHeader-${groupName}`,
-                    name: groupName,
+                    type: `groupHeader-${gName}`,
+                    name: gName,
                     height: parseInt(b['@_height'] || '0', 10),
                     splitType: b['@_splitType'] || undefined,
                     elements: parseElementsFromContainer(b)
@@ -372,11 +416,11 @@ function parseBands(reportNode: any): JrxmlBand[] {
             }
         }
         if (g.groupFooter) {
-            const gBands = toArray(g.groupFooter.band || g.groupFooter);
-            for (const b of gBands) {
+            const bNodes = toArray(g.groupFooter.band || g.groupFooter);
+            for (const b of bNodes) {
                 bands.push({
-                    type: `groupFooter-${groupName}`,
-                    name: groupName,
+                    type: `groupFooter-${gName}`,
+                    name: gName,
                     height: parseInt(b['@_height'] || '0', 10),
                     splitType: b['@_splitType'] || undefined,
                     elements: parseElementsFromContainer(b)
@@ -388,11 +432,12 @@ function parseBands(reportNode: any): JrxmlBand[] {
     return bands;
 }
 
+function parseQueryString(reportNode: any): string | undefined {
+    return extractText(reportNode.queryString);
+}
+
 function parseGeometry(reportElement: any): JrxmlGeometry {
-    const rep = extractFirst(reportElement);
-    if (!rep) {
-        return { x: 0, y: 0, width: 0, height: 0 };
-    }
+    const rep = extractFirst(reportElement) || {};
     return {
         x: parseInt(rep['@_x'] || '0', 10),
         y: parseInt(rep['@_y'] || '0', 10),
@@ -453,6 +498,56 @@ function parseTextProperties(textElement: any): {
         isUnderline: font?.['@_isUnderline'] === 'true' || font?.['@_isUnderline'] === true,
         isStrikeThrough: font?.['@_isStrikeThrough'] === 'true' || font?.['@_isStrikeThrough'] === true
     };
+}
+
+function parseBarcodeComponent(elem: any): JrxmlBarcodeComponent | undefined {
+    for (const key of Object.keys(elem)) {
+        if (key === 'reportElement' || key === 'box' || key.startsWith('@_')) {continue;}
+        const lowerKey = key.toLowerCase();
+        let barcodeType: JrxmlBarcodeType | undefined;
+
+        if (lowerKey.includes('qrcode')) {
+            barcodeType = 'QRCode';
+        } else if (lowerKey.includes('code128')) {
+            barcodeType = 'Code128';
+        } else if (lowerKey.includes('ean13')) {
+            barcodeType = 'EAN13';
+        } else if (lowerKey.includes('code39')) {
+            barcodeType = 'Code39';
+        } else if (lowerKey.includes('barbecue')) {
+            const bNode = extractFirst(elem[key]);
+            const bType = (bNode?.['@_type'] || '').toLowerCase();
+            if (bType.includes('128')) {barcodeType = 'Code128';}
+            else if (bType.includes('39')) {barcodeType = 'Code39';}
+            else if (bType.includes('ean13') || bType.includes('ean-13')) {barcodeType = 'EAN13';}
+            else {barcodeType = 'unknown';}
+        }
+
+        if (barcodeType) {
+            const compNode = extractFirst(elem[key]) || {};
+            const codeExpr = parseExpression(
+                compNode['jr:codeExpression'] ||
+                compNode['c:codeExpression'] ||
+                compNode.codeExpression ||
+                compNode['jr:code'] ||
+                compNode.code
+            );
+
+            return {
+                barcodeType,
+                codeExpression: codeExpr,
+                evaluationTime: compNode['@_evaluationTime'] || undefined,
+                drawText: compNode['@_drawText'] !== 'false' && compNode['@_drawText'] !== false,
+                checksumRequired: compNode['@_checksumRequired'] === 'true' || compNode['@_checksumRequired'] === true,
+                errorCorrectionLevel: compNode['@_errorCorrectionLevel'] || undefined,
+                barWidth: compNode['@_barWidth'] !== undefined ? parseFloat(compNode['@_barWidth']) : undefined,
+                barHeight: compNode['@_barHeight'] !== undefined ? parseFloat(compNode['@_barHeight']) : undefined,
+                quietZone: compNode['@_quietZone'] !== undefined ? parseFloat(compNode['@_quietZone']) : undefined,
+                orientation: compNode['@_orientation'] || undefined
+            };
+        }
+    }
+    return undefined;
 }
 
 export function parseElementsFromContainer(containerNode: any): JrxmlElement[] {
@@ -560,6 +655,27 @@ export function parseElementsFromContainer(containerNode: any): JrxmlElement[] {
             geometry: { x: 0, y: 0, width: 0, height: 0 },
             children
         });
+    }
+
+    const componentElements = toArray(containerNode.componentElement);
+    for (const elem of componentElements) {
+        const base = parseBaseProperties(elem);
+        const barcodeInfo = parseBarcodeComponent(elem);
+        if (barcodeInfo) {
+            elements.push({
+                type: 'componentElement',
+                componentType: 'barcode',
+                barcodeComponent: barcodeInfo,
+                ...base,
+                box: parseBox(elem.box)
+            });
+        } else {
+            elements.push({
+                type: 'componentElement',
+                ...base,
+                box: parseBox(elem.box)
+            });
+        }
     }
 
     const subreports = toArray(containerNode.subreport);

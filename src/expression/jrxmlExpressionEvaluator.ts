@@ -81,6 +81,18 @@ function evaluateAstOrTokens(expr: string, context: EvaluationContext): Intermed
         return evaluateComparison(comparisonMatch, context);
     }
 
+    if (trimmed.includes('.equals(')) {
+        const eqMatch = trimmed.match(/^([\s\S]+?)\.equals\(\s*([\s\S]+?)\s*\)$/);
+        if (eqMatch) {
+            const leftRes = evaluateAstOrTokens(eqMatch[1], context);
+            const rightRes = evaluateAstOrTokens(eqMatch[2], context);
+            if (leftRes.status === 'RESOLVED' && rightRes.status === 'RESOLVED') {
+                return { status: 'RESOLVED', value: leftRes.value === rightRes.value };
+            }
+            return { status: leftRes.status !== 'RESOLVED' ? leftRes.status : rightRes.status, value: false };
+        }
+    }
+
     const concatParts = splitTopLevelBinary(trimmed, '+');
     if (concatParts.length > 1) {
         let hasString = false;

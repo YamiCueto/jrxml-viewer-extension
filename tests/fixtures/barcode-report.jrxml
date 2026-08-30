@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="BarcodeReport"
+              pageWidth="595"
+              pageHeight="842"
+              columnWidth="555"
+              leftMargin="20"
+              rightMargin="20"
+              topMargin="20"
+              bottomMargin="20"
+              uuid="bc-report-001">
+
+    <style name="BaseStyle" isDefault="true" fontName="SansSerif" fontSize="10" forecolor="#000000"/>
+    
+    <style name="StatusStyle" parentStyle="BaseStyle">
+        <conditionalStyle forecolor="#DC2626" isBold="true">
+            <conditionExpression><![CDATA[$F{status}.equals("EXPIRED")]]></conditionExpression>
+        </conditionalStyle>
+        <conditionalStyle forecolor="#16A34A" isBold="true">
+            <conditionExpression><![CDATA[$F{status}.equals("ACTIVE")]]></conditionExpression>
+        </conditionalStyle>
+    </style>
+
+    <parameter name="ReportTitle" class="java.lang.String">
+        <defaultValueExpression><![CDATA["LOGISTICS & BARCODE MANIFEST"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="InvoiceNumber" class="java.lang.String">
+        <defaultValueExpression><![CDATA["INV-2026-9901"]]></defaultValueExpression>
+    </parameter>
+
+    <field name="productCode" class="java.lang.String"/>
+    <field name="eanCode" class="java.lang.String"/>
+    <field name="trackingUrl" class="java.lang.String"/>
+    <field name="lotNumber" class="java.lang.String"/>
+    <field name="status" class="java.lang.String"/>
+
+    <title>
+        <band height="70">
+            <staticText>
+                <reportElement x="0" y="10" width="555" height="30" uuid="t-001"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="16" isBold="true"/>
+                </textElement>
+                <text><![CDATA[LOGISTICS & BARCODE MANIFEST]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="0" y="45" width="555" height="20" style="StatusStyle" uuid="t-002"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="11"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Status: " + $F{status}]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <detail>
+        <band height="320">
+            <!-- QR Code component -->
+            <staticText>
+                <reportElement x="20" y="10" width="220" height="20" uuid="l-qr"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[1. QR Code (Verification URL)]]></text>
+            </staticText>
+            <componentElement>
+                <reportElement x="20" y="35" width="120" height="120" uuid="qr-001"/>
+                <jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components"
+                           xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd"
+                           errorCorrectionLevel="M">
+                    <jr:codeExpression><![CDATA["https://verify.example.com/inv/9901"]]></jr:codeExpression>
+                </jr:QRCode>
+            </componentElement>
+
+            <!-- Code 128 component -->
+            <staticText>
+                <reportElement x="280" y="10" width="250" height="20" uuid="l-c128"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[2. Code 128 (Invoice Tracking)]]></text>
+            </staticText>
+            <componentElement>
+                <reportElement x="280" y="35" width="250" height="50" uuid="c128-001"/>
+                <jr:Code128 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components"
+                            xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd"
+                            drawText="true">
+                    <jr:codeExpression><![CDATA[$P{InvoiceNumber}]]></jr:codeExpression>
+                </jr:Code128>
+            </componentElement>
+
+            <!-- EAN 13 component -->
+            <staticText>
+                <reportElement x="20" y="170" width="220" height="20" uuid="l-ean"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[3. EAN-13 (Product Retail Barcode)]]></text>
+            </staticText>
+            <componentElement>
+                <reportElement x="20" y="195" width="200" height="60" uuid="ean-001"/>
+                <jr:EAN13 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components"
+                          xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd"
+                          drawText="true">
+                    <jr:codeExpression><![CDATA["750103131130"]]></jr:codeExpression>
+                </jr:EAN13>
+            </componentElement>
+
+            <!-- Code 39 component -->
+            <staticText>
+                <reportElement x="280" y="170" width="250" height="20" uuid="l-c39"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[4. Code 39 (Industrial Lot Identifier)]]></text>
+            </staticText>
+            <componentElement>
+                <reportElement x="280" y="195" width="250" height="50" uuid="c39-001"/>
+                <jr:Code39 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components"
+                           xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd"
+                           drawText="true">
+                    <jr:codeExpression><![CDATA["LOT-2026-X"]]></jr:codeExpression>
+                </jr:Code39>
+            </componentElement>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="30">
+            <staticText>
+                <reportElement x="0" y="5" width="555" height="20" uuid="pf-001"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="8" isItalic="true"/>
+                </textElement>
+                <text><![CDATA[Generated by JRXML Viewer & Editor — High Fidelity Barcodes & QR]]></text>
+            </staticText>
+        </band>
+    </pageFooter>
+</jasperReport>

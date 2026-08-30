@@ -1,5 +1,7 @@
 import { JrxmlStyle, JrxmlElement, JrxmlBox } from '../model/jrxmlDocumentModel';
 import { ResolvedStyle } from './jrxmlResolvedStyle';
+import { EvaluationContext } from '../expression/jrxmlEvaluationContext';
+import { evaluateExpression } from '../expression/jrxmlExpressionEvaluator';
 
 export function resolveDocumentStyles(styles: JrxmlStyle[]): Map<string, ResolvedStyle> {
     const styleMap = new Map<string, JrxmlStyle>();
@@ -119,7 +121,9 @@ export function mergeStyles(base: ResolvedStyle, override: ResolvedStyle): Resol
 
 export function resolveElementStyle(
     element: JrxmlElement,
-    allStyles: Map<string, ResolvedStyle> | JrxmlStyle[]
+    allStyles: Map<string, ResolvedStyle> | JrxmlStyle[],
+    evalContext?: EvaluationContext,
+    rawStyles?: JrxmlStyle[]
 ): ResolvedStyle {
     const resolvedStyleMap = allStyles instanceof Map
         ? allStyles
@@ -128,6 +132,25 @@ export function resolveElementStyle(
     let base: ResolvedStyle = {};
     if (element.styleName && resolvedStyleMap.has(element.styleName)) {
         base = resolvedStyleMap.get(element.styleName)!;
+    }
+
+    if (element.styleName && evalContext) {
+        const stylesList = rawStyles || (Array.isArray(allStyles) ? allStyles : undefined);
+        if (stylesList) {
+            const rawStyle = stylesList.find(s => s.name === element.styleName);
+            if (rawStyle && rawStyle.conditionalStyles && rawStyle.conditionalStyles.length > 0) {
+                for (const cs of rawStyle.conditionalStyles) {
+                    try {
+                        const evalRes = evaluateExpression(cs.conditionExpression.raw, evalContext);
+                        if (evalRes.status === 'RESOLVED' && evalRes.value) {
+                            const condResolved = createResolvedFromJrxmlStyle(cs.style as JrxmlStyle);
+                            base = mergeStyles(base, condResolved);
+                        }
+                    } catch {
+                    }
+                }
+            }
+        }
     }
 
     const elementStyle: ResolvedStyle = {

@@ -181,6 +181,8 @@
     "compile:media": "tsc -p ./tsconfig.media.json",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile",
+    "test": "node tests/run-tests.js && node tests/layout/run-layout-tests.js && node tests/render/run-render-tests.js && node tests/editing/run-editing-tests.js && node tests/expression/run-expression-tests.js && node tests/style/run-style-tests.js && node tests/visual/run-visual-tests.js && node tests/charts/run-chart-tests.js && node tests/barcodes/run-barcode-tests.js && node tests/style/run-conditional-style-tests.js",
+    "test:e2e": "node tests/e2e/run-e2e-evidence.js",
     "lint": "eslint src --ext ts",
     "package": "vsce package",
     "release:patch": "npm version patch && git push && git push --tags",
