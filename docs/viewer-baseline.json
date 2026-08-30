@@ -1,0 +1,232 @@
+{
+  "version": "0.1.9",
+  "fixture": "tests/fixtures/complex-report.jrxml",
+  "environment": {
+    "node": "v24.19.0",
+    "typescript": "5.9.3",
+    "vscodeEngine": "^1.85.0",
+    "xmlParser": "fast-xml-parser: ^5.3.3"
+  },
+  "parser": {
+    "reportConfig": {
+      "status": "PASS",
+      "detected": {
+        "name": "ComplexEnterpriseSalesCustomerReport",
+        "pageWidth": 595,
+        "pageHeight": 842,
+        "orientation": "Portrait",
+        "columnWidth": 555,
+        "margins": {
+          "top": 20,
+          "bottom": 20,
+          "left": 20,
+          "right": 20
+        }
+      }
+    },
+    "parameters": {
+      "realCount": 10,
+      "detectedCount": 10,
+      "status": "PASS"
+    },
+    "fields": {
+      "realCount": 16,
+      "detectedCount": 16,
+      "status": "PASS"
+    },
+    "variables": {
+      "realCount": 9,
+      "detectedCount": 9,
+      "status": "PASS"
+    },
+    "groups": {
+      "realCount": 1,
+      "detectedCount": 1,
+      "status": "PASS"
+    },
+    "bands": {
+      "realCount": 11,
+      "detectedCount": 11,
+      "status": "PASS"
+    },
+    "elements": {
+      "totalInXml": 85,
+      "totalParsed": 45,
+      "lossRatePercent": 47.06,
+      "byType": {
+        "staticText": {
+          "realCount": 27,
+          "detectedCount": 16,
+          "status": "PARTIAL"
+        },
+        "textField": {
+          "realCount": 32,
+          "detectedCount": 19,
+          "status": "PARTIAL"
+        },
+        "image": {
+          "realCount": 1,
+          "detectedCount": 0,
+          "status": "FAIL"
+        },
+        "line": {
+          "realCount": 6,
+          "detectedCount": 5,
+          "status": "PARTIAL"
+        },
+        "rectangle": {
+          "realCount": 8,
+          "detectedCount": 4,
+          "status": "PARTIAL"
+        },
+        "ellipse": {
+          "realCount": 3,
+          "detectedCount": 0,
+          "status": "NOT_SUPPORTED"
+        },
+        "frame": {
+          "realCount": 4,
+          "detectedCount": 0,
+          "status": "NOT_SUPPORTED"
+        },
+        "charts": {
+          "realCount": 3,
+          "detectedCount": 0,
+          "status": "FAIL"
+        },
+        "subreport": {
+          "realCount": 1,
+          "detectedCount": 1,
+          "status": "PASS"
+        }
+      }
+    },
+    "styles": {
+      "realCount": 13,
+      "detectedCount": 0,
+      "status": "NOT_SUPPORTED"
+    },
+    "printWhenExpressions": {
+      "realCount": 8,
+      "detectedCount": 0,
+      "status": "NOT_SUPPORTED"
+    },
+    "boxAndPens": {
+      "realCountBoxes": 9,
+      "realCountPens": 22,
+      "detectedCount": 0,
+      "status": "NOT_SUPPORTED"
+    }
+  },
+  "renderer": {
+    "canvasWidth": 595,
+    "canvasHeight": 1646,
+    "expectedPageHeight": 842,
+    "layoutModel": "vertical_stack",
+    "framesSupported": false,
+    "chartsSupported": false,
+    "ellipseSupported": false,
+    "stylesApplied": false,
+    "boxBordersApplied": false,
+    "expressionEvaluation": "raw_string"
+  },
+  "treeViews": {
+    "jrxmlFiles": {
+      "status": "PASS",
+      "filesFound": 1
+    },
+    "jrxmlProperties": {
+      "status": "PARTIAL",
+      "bandHeightsReportedZero": true,
+      "statsEmpty": true
+    },
+    "jrxmlElements": {
+      "status": "FAIL",
+      "elementsFound": 0,
+      "message": "No elements found"
+    }
+  },
+  "editing": {
+    "selection": "PASS",
+    "livePreview": "PASS",
+    "saveMethod": "regex_coordinate_match",
+    "saveStatus": "FAIL",
+    "exportHtml": "PASS",
+    "zoom": "PASS"
+  },
+  "knownIssues": [
+    {
+      "id": "KF-01",
+      "name": "Frames Drop",
+      "severity": "HIGH",
+      "impact": "Nested elements inside <frame> are omitted from parser and renderer."
+    },
+    {
+      "id": "KF-02",
+      "name": "Band Height Zero in Properties View",
+      "severity": "MEDIUM",
+      "impact": "JrxmlPropertiesProvider fails to read height on <band> child tags."
+    },
+    {
+      "id": "KF-03",
+      "name": "Tree View Elements Empty",
+      "severity": "HIGH",
+      "impact": "JrxmlElementsProvider fails to navigate band container nodes and shows No elements found."
+    },
+    {
+      "id": "KF-04",
+      "name": "Chart Types Unrecognized",
+      "severity": "HIGH",
+      "impact": "<barChart>, <pieChart>, <lineChart> are ignored by the parser."
+    },
+    {
+      "id": "KF-05",
+      "name": "Ellipse Unsupported",
+      "severity": "MEDIUM",
+      "impact": "<ellipse> is not extracted by jrxmlParser and not rendered in preview."
+    },
+    {
+      "id": "KF-06",
+      "name": "Vertical Band Stacking Distortion",
+      "severity": "HIGH",
+      "impact": "All bands including background (802px) and noData (120px) are stacked vertically."
+    },
+    {
+      "id": "KF-07",
+      "name": "Group Bands Ordering",
+      "severity": "MEDIUM",
+      "impact": "groupHeader and groupFooter bands are appended after summary and noData."
+    },
+    {
+      "id": "KF-08",
+      "name": "Fragile Regex Mutation",
+      "severity": "HIGH",
+      "impact": "Saving properties with updateElementInFile uses (x,y) regex matching leading to corruption."
+    }
+  ],
+  "documentModelSprint1": {
+    "status": "IMPLEMENTED",
+    "totalXmlElements": 85,
+    "totalParsedElements": 85,
+    "lossRatePercent": 0.0,
+    "elementsByType": {
+      "staticText": { "realCount": 27, "detectedCount": 27, "status": "PASS" },
+      "textField": { "realCount": 32, "detectedCount": 32, "status": "PASS" },
+      "image": { "realCount": 1, "detectedCount": 1, "status": "PASS" },
+      "line": { "realCount": 6, "detectedCount": 6, "status": "PASS" },
+      "rectangle": { "realCount": 8, "detectedCount": 8, "status": "PASS" },
+      "ellipse": { "realCount": 3, "detectedCount": 3, "status": "PASS" },
+      "frame": { "realCount": 4, "detectedCount": 4, "status": "PASS" },
+      "charts": { "realCount": 3, "detectedCount": 3, "status": "PASS", "subtypes": ["barChart", "pieChart", "lineChart"] },
+      "subreport": { "realCount": 1, "detectedCount": 1, "status": "PASS" }
+    },
+    "styles": { "realCount": 13, "detectedCount": 13, "status": "PASS" },
+    "printWhenExpressions": { "realCount": 8, "detectedCount": 8, "status": "PASS" },
+    "boxes": { "realCount": 9, "detectedCount": 9, "status": "PASS" },
+    "treeViews": {
+      "jrxmlProperties": { "status": "PASS", "bandHeightsReal": true, "stylesListed": true, "statsTotal": 85 },
+      "jrxmlElements": { "status": "PASS", "bandsCount": 11, "nestedFramesSupported": true }
+    }
+  }
+}
+

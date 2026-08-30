@@ -1,0 +1,827 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="ComplexEnterpriseSalesCustomerReport"
+              language="java"
+              pageWidth="595"
+              pageHeight="842"
+              orientation="Portrait"
+              columnWidth="555"
+              columnSpacing="0"
+              leftMargin="20"
+              rightMargin="20"
+              topMargin="20"
+              bottomMargin="20"
+              uuid="d7a31b4e-28f0-4573-9a3d-a56789abcdef"
+              whenNoDataType="NoDataSection">
+    <property name="ireport.zoom" value="1.0"/>
+    <property name="ireport.x" value="0"/>
+    <property name="ireport.y" value="0"/>
+    <property name="com.jaspersoft.studio.data.defaultdataadapter" value="Sample DB"/>
+    <property name="net.sf.jasperreports.export.html.embed.image" value="true"/>
+    <style name="BaseStyle" isDefault="true" fontName="SansSerif" fontSize="9" forecolor="#1E293B" backcolor="#FFFFFF" mode="Transparent"/>
+    <style name="ReportTitleStyle" style="BaseStyle" fontSize="18" isBold="true" forecolor="#0F172A" hTextAlign="Left" vTextAlign="Middle"/>
+    <style name="ReportSubtitleStyle" style="BaseStyle" fontSize="10" isItalic="true" forecolor="#64748B" hTextAlign="Left" vTextAlign="Middle"/>
+    <style name="TableHeaderStyle" style="BaseStyle" fontSize="8" isBold="true" forecolor="#FFFFFF" backcolor="#1E293B" mode="Opaque" hTextAlign="Center" vTextAlign="Middle">
+        <box>
+            <pen lineWidth="0.5" lineColor="#0F172A"/>
+            <topPen lineWidth="0.5" lineColor="#0F172A"/>
+            <leftPen lineWidth="0.5" lineColor="#0F172A"/>
+            <bottomPen lineWidth="1.0" lineColor="#0F172A"/>
+            <rightPen lineWidth="0.5" lineColor="#0F172A"/>
+        </box>
+    </style>
+    <style name="TableCellStyle" style="BaseStyle" fontSize="8" forecolor="#334155" vTextAlign="Middle">
+        <box topPadding="2" bottomPadding="2" leftPadding="4" rightPadding="4">
+            <bottomPen lineWidth="0.5" lineColor="#E2E8F0"/>
+        </box>
+    </style>
+    <style name="CurrencyCell" style="TableCellStyle" hTextAlign="Right" pattern="$ #,##0.00"/>
+    <style name="DateCell" style="TableCellStyle" hTextAlign="Center" pattern="yyyy-MM-dd"/>
+    <style name="NumberCell" style="TableCellStyle" hTextAlign="Right" pattern="#,##0"/>
+    <style name="GroupHeaderStyle" style="BaseStyle" fontSize="11" isBold="true" forecolor="#1E40AF" backcolor="#EFF6FF" mode="Opaque" vTextAlign="Middle">
+        <box leftPadding="8">
+            <bottomPen lineWidth="1.5" lineColor="#3B82F6"/>
+        </box>
+    </style>
+    <style name="GroupFooterStyle" style="BaseStyle" fontSize="9" isBold="true" forecolor="#1E293B" backcolor="#F8FAFC" mode="Opaque" vTextAlign="Middle">
+        <box rightPadding="4">
+            <topPen lineWidth="1.0" lineColor="#CBD5E1"/>
+            <bottomPen lineWidth="1.0" lineColor="#CBD5E1"/>
+        </box>
+    </style>
+    <style name="CardBoxStyle" style="BaseStyle">
+        <box topPadding="4" leftPadding="6" bottomPadding="4" rightPadding="6">
+            <pen lineWidth="1.0" lineColor="#E2E8F0"/>
+            <topPen lineWidth="1.0" lineColor="#E2E8F0"/>
+            <leftPen lineWidth="1.0" lineColor="#E2E8F0"/>
+            <bottomPen lineWidth="1.0" lineColor="#CBD5E1"/>
+            <rightPen lineWidth="1.0" lineColor="#CBD5E1"/>
+        </box>
+    </style>
+    <style name="HighlightBadge" style="BaseStyle" fontSize="8" isBold="true" forecolor="#047857" backcolor="#D1FAE5" mode="Opaque" hTextAlign="Center" vTextAlign="Middle">
+        <box>
+            <pen lineWidth="0.5" lineColor="#10B981"/>
+        </box>
+    </style>
+    <style name="WarningBadge" style="BaseStyle" fontSize="8" isBold="true" forecolor="#B45309" backcolor="#FEF3C7" mode="Opaque" hTextAlign="Center" vTextAlign="Middle">
+        <box>
+            <pen lineWidth="0.5" lineColor="#F59E0B"/>
+        </box>
+    </style>
+    <parameter name="ReportTitle" class="java.lang.String" isForPrompting="true">
+        <defaultValueExpression><![CDATA["Enterprise Sales & Customer Performance Summary"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="CompanyCode" class="java.lang.String" isForPrompting="false">
+        <defaultValueExpression><![CDATA["CORP-HQ-001"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="ExportUser" class="java.lang.String" isForPrompting="false">
+        <defaultValueExpression><![CDATA["System.Auditor"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="DepartmentFilter" class="java.lang.String" isForPrompting="true"/>
+    <parameter name="FiscalYear" class="java.lang.Integer" isForPrompting="true">
+        <defaultValueExpression><![CDATA[Integer.valueOf(2026)]]></defaultValueExpression>
+    </parameter>
+    <parameter name="MinOrderQuantity" class="java.lang.Integer" isForPrompting="true">
+        <defaultValueExpression><![CDATA[Integer.valueOf(1)]]></defaultValueExpression>
+    </parameter>
+    <parameter name="StartDate" class="java.util.Date" isForPrompting="true">
+        <defaultValueExpression><![CDATA[new java.util.Date(1767225600000L)]]></defaultValueExpression>
+    </parameter>
+    <parameter name="EndDate" class="java.util.Date" isForPrompting="true">
+        <defaultValueExpression><![CDATA[new java.util.Date()]]></defaultValueExpression>
+    </parameter>
+    <parameter name="ShowSummaryCharts" class="java.lang.Boolean" isForPrompting="true">
+        <defaultValueExpression><![CDATA[Boolean.TRUE]]></defaultValueExpression>
+    </parameter>
+    <parameter name="IncludeDiscounts" class="java.lang.Boolean" isForPrompting="true">
+        <defaultValueExpression><![CDATA[Boolean.TRUE]]></defaultValueExpression>
+    </parameter>
+    <queryString>
+        <![CDATA[SELECT transaction_id, customer_id, customer_name, region, product_category, order_status, order_quantity, loyalty_points, unit_price, discount_amount, tax_amount, total_amount, order_date, shipping_date, is_vip_customer, is_delivered FROM sales_transactions WHERE order_quantity >= $P{MinOrderQuantity} ORDER BY region, order_date DESC]]>
+    </queryString>
+    <field name="transactionId" class="java.lang.Long"/>
+    <field name="customerId" class="java.lang.String"/>
+    <field name="customerName" class="java.lang.String"/>
+    <field name="region" class="java.lang.String"/>
+    <field name="productCategory" class="java.lang.String"/>
+    <field name="orderStatus" class="java.lang.String"/>
+    <field name="orderQuantity" class="java.lang.Integer"/>
+    <field name="loyaltyPoints" class="java.lang.Integer"/>
+    <field name="unitPrice" class="java.math.BigDecimal"/>
+    <field name="discountAmount" class="java.math.BigDecimal"/>
+    <field name="taxAmount" class="java.math.BigDecimal"/>
+    <field name="totalAmount" class="java.math.BigDecimal"/>
+    <field name="orderDate" class="java.util.Date"/>
+    <field name="shippingDate" class="java.util.Date"/>
+    <field name="isVipCustomer" class="java.lang.Boolean"/>
+    <field name="isDelivered" class="java.lang.Boolean"/>
+    <variable name="currentCustomerName" class="java.lang.String" calculation="Nothing">
+        <variableExpression><![CDATA[$F{customerName}]]></variableExpression>
+    </variable>
+    <variable name="groupTotalAmount" class="java.math.BigDecimal" resetType="Group" resetGroup="RegionGroup" calculation="Sum">
+        <variableExpression><![CDATA[$F{totalAmount}]]></variableExpression>
+    </variable>
+    <variable name="groupDiscountAmount" class="java.math.BigDecimal" resetType="Group" resetGroup="RegionGroup" calculation="Sum">
+        <variableExpression><![CDATA[$F{discountAmount} != null ? $F{discountAmount} : java.math.BigDecimal.ZERO]]></variableExpression>
+    </variable>
+    <variable name="groupOrderCount" class="java.lang.Integer" resetType="Group" resetGroup="RegionGroup" calculation="Count">
+        <variableExpression><![CDATA[$F{transactionId}]]></variableExpression>
+    </variable>
+    <variable name="groupAvgQuantity" class="java.lang.Double" resetType="Group" resetGroup="RegionGroup" calculation="Average">
+        <variableExpression><![CDATA[$F{orderQuantity}.doubleValue()]]></variableExpression>
+    </variable>
+    <variable name="grandTotalAmount" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression><![CDATA[$F{totalAmount}]]></variableExpression>
+    </variable>
+    <variable name="grandTotalDiscounts" class="java.math.BigDecimal" calculation="Sum">
+        <variableExpression><![CDATA[$F{discountAmount} != null ? $F{discountAmount} : java.math.BigDecimal.ZERO]]></variableExpression>
+    </variable>
+    <variable name="totalTransactionsCount" class="java.lang.Long" calculation="Count">
+        <variableExpression><![CDATA[$F{transactionId}]]></variableExpression>
+    </variable>
+    <variable name="avgOrderAmount" class="java.math.BigDecimal" calculation="Average">
+        <variableExpression><![CDATA[$F{totalAmount}]]></variableExpression>
+    </variable>
+    <group name="RegionGroup" isStartNewPage="false" isReprintHeaderOnEachPage="false">
+        <groupExpression><![CDATA[$F{region}]]></groupExpression>
+        <groupHeader>
+            <band height="36">
+                <frame>
+                    <reportElement style="GroupHeaderStyle" x="0" y="4" width="555" height="28" uuid="a1b2c3d4-e5f6-7890-abcd-ef1234567890"/>
+                    <staticText>
+                        <reportElement x="8" y="4" width="60" height="20" forecolor="#1E40AF" uuid="e1a2b3c4-0001-0000-0000-000000000001"/>
+                        <textElement verticalAlignment="Middle">
+                            <font fontName="SansSerif" size="10" isBold="true"/>
+                        </textElement>
+                        <text><![CDATA[REGION:]]></text>
+                    </staticText>
+                    <textField isBlankWhenNull="true">
+                        <reportElement x="70" y="4" width="200" height="20" forecolor="#1E3A8A" uuid="e1a2b3c4-0001-0000-0000-000000000002"/>
+                        <textElement verticalAlignment="Middle">
+                            <font fontName="SansSerif" size="11" isBold="true"/>
+                        </textElement>
+                        <textFieldExpression><![CDATA[$F{region}]]></textFieldExpression>
+                    </textField>
+                    <staticText>
+                        <reportElement x="375" y="6" width="95" height="16" forecolor="#64748B" uuid="e1a2b3c4-0001-0000-0000-000000000003"/>
+                        <textElement textAlignment="Right" verticalAlignment="Middle">
+                            <font fontName="SansSerif" size="8" isItalic="true"/>
+                        </textElement>
+                        <text><![CDATA[Sector Grouping]]></text>
+                    </staticText>
+                    <ellipse>
+                        <reportElement x="480" y="8" width="12" height="12" forecolor="#3B82F6" backcolor="#3B82F6" mode="Opaque" uuid="e1a2b3c4-0001-0000-0000-000000000004"/>
+                        <graphicElement>
+                            <pen lineWidth="1.0" lineColor="#1D4ED8"/>
+                        </graphicElement>
+                    </ellipse>
+                    <line direction="BottomUp">
+                        <reportElement x="500" y="4" width="1" height="20" forecolor="#93C5FD" uuid="e1a2b3c4-0001-0000-0000-000000000005"/>
+                        <graphicElement>
+                            <pen lineWidth="1.0" lineStyle="Solid" lineColor="#93C5FD"/>
+                        </graphicElement>
+                    </line>
+                    <textField evaluationTime="Group" evaluationGroup="RegionGroup">
+                        <reportElement x="505" y="6" width="45" height="16" forecolor="#2563EB" uuid="e1a2b3c4-0001-0000-0000-000000000006"/>
+                        <textElement textAlignment="Right" verticalAlignment="Middle">
+                            <font fontName="SansSerif" size="8" isBold="true"/>
+                        </textElement>
+                        <textFieldExpression><![CDATA[$V{groupOrderCount} + " recs"]]></textFieldExpression>
+                    </textField>
+                </frame>
+            </band>
+        </groupHeader>
+        <groupFooter>
+            <band height="26">
+                <rectangle>
+                    <reportElement style="GroupFooterStyle" x="0" y="2" width="555" height="22" backcolor="#F8FAFC" mode="Opaque" uuid="f1a2b3c4-0002-0000-0000-000000000001"/>
+                    <graphicElement>
+                        <pen lineWidth="0.75" lineColor="#CBD5E1"/>
+                    </graphicElement>
+                </rectangle>
+                <textField>
+                    <reportElement x="10" y="4" width="220" height="18" forecolor="#334155" uuid="f1a2b3c4-0002-0000-0000-000000000002"/>
+                    <textElement verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="9" isBold="true"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA["Subtotal for Region: " + ($F{region} != null ? $F{region} : "N/A")]]></textFieldExpression>
+                </textField>
+                <staticText>
+                    <reportElement x="240" y="4" width="40" height="18" forecolor="#64748B" uuid="f1a2b3c4-0002-0000-0000-000000000003"/>
+                    <textElement textAlignment="Right" verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="8"/>
+                    </textElement>
+                    <text><![CDATA[Count:]]></text>
+                </staticText>
+                <textField evaluationTime="Group" evaluationGroup="RegionGroup" pattern="#,##0">
+                    <reportElement x="282" y="4" width="35" height="18" forecolor="#0F172A" uuid="f1a2b3c4-0002-0000-0000-000000000004"/>
+                    <textElement textAlignment="Right" verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="8" isBold="true"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA[$V{groupOrderCount}]]></textFieldExpression>
+                </textField>
+                <textField evaluationTime="Group" evaluationGroup="RegionGroup" pattern="$ #,##0.00" isBlankWhenNull="true">
+                    <reportElement x="350" y="4" width="75" height="18" forecolor="#64748B" uuid="f1a2b3c4-0002-0000-0000-000000000005">
+                        <printWhenExpression><![CDATA[$P{IncludeDiscounts}]]></printWhenExpression>
+                    </reportElement>
+                    <textElement textAlignment="Right" verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="8" isItalic="true"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA[$V{groupDiscountAmount}]]></textFieldExpression>
+                </textField>
+                <textField evaluationTime="Group" evaluationGroup="RegionGroup" pattern="$ #,##0.00">
+                    <reportElement x="450" y="3" width="100" height="19" forecolor="#1E40AF" uuid="f1a2b3c4-0002-0000-0000-000000000006"/>
+                    <textElement textAlignment="Right" verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="9" isBold="true"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA[$V{groupTotalAmount}]]></textFieldExpression>
+                </textField>
+            </band>
+        </groupFooter>
+    </group>
+    <background>
+        <band height="802">
+            <rectangle>
+                <reportElement x="0" y="0" width="555" height="802" forecolor="#E2E8F0" backcolor="transparent" mode="Transparent" uuid="b0000000-0000-0000-0000-000000000001"/>
+                <graphicElement>
+                    <pen lineWidth="0.5" lineStyle="Solid" lineColor="#E2E8F0"/>
+                </graphicElement>
+            </rectangle>
+            <staticText>
+                <reportElement x="120" y="260" width="320" height="280" forecolor="#F1F5F9" mode="Transparent" uuid="b0000000-0000-0000-0000-000000000002" rotation="Left">
+                    <printWhenExpression><![CDATA[$P{CompanyCode} != null]]></printWhenExpression>
+                </reportElement>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="44" isBold="true"/>
+                </textElement>
+                <text><![CDATA[CONFIDENTIAL]]></text>
+            </staticText>
+            <ellipse>
+                <reportElement x="235" y="360" width="80" height="80" forecolor="#F8FAFC" backcolor="#F8FAFC" mode="Opaque" uuid="b0000000-0000-0000-0000-000000000003"/>
+                <graphicElement>
+                    <pen lineWidth="1.0" lineStyle="Dotted" lineColor="#E2E8F0"/>
+                </graphicElement>
+            </ellipse>
+        </band>
+    </background>
+    <title>
+        <band height="120">
+            <frame>
+                <reportElement x="0" y="0" width="555" height="68" backcolor="#0F172A" mode="Opaque" uuid="t0000000-0001-0000-0000-000000000001"/>
+                <box topPadding="4" leftPadding="6" bottomPadding="4" rightPadding="6">
+                    <pen lineWidth="1.0" lineColor="#1E293B"/>
+                </box>
+                <image scaleImage="RetainShape" hAlign="Center" vAlign="Middle">
+                    <reportElement x="6" y="6" width="48" height="48" uuid="t0000000-0001-0000-0000-000000000002"/>
+                    <imageExpression><![CDATA["https://raw.githubusercontent.com/YamiCueto/jrxml-viewer-extension/main/report.png"]]></imageExpression>
+                </image>
+                <staticText>
+                    <reportElement style="ReportTitleStyle" x="62" y="6" width="340" height="24" forecolor="#FFFFFF" uuid="t0000000-0001-0000-0000-000000000003"/>
+                    <textElement verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="14" isBold="true"/>
+                    </textElement>
+                    <text><![CDATA[ACME GLOBAL ENTERPRISES]]></text>
+                </staticText>
+                <textField isBlankWhenNull="false">
+                    <reportElement style="ReportSubtitleStyle" x="62" y="32" width="340" height="18" forecolor="#94A3B8" uuid="t0000000-0001-0000-0000-000000000004"/>
+                    <textElement verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="9" isItalic="true"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA[$P{ReportTitle}]]></textFieldExpression>
+                </textField>
+                <textField>
+                    <reportElement x="410" y="8" width="135" height="14" forecolor="#94A3B8" uuid="t0000000-0001-0000-0000-000000000005"/>
+                    <textElement textAlignment="Right" verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="8"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA["FY: " + $P{FiscalYear}]]></textFieldExpression>
+                </textField>
+                <textField pattern="yyyy-MM-dd">
+                    <reportElement x="410" y="24" width="135" height="14" forecolor="#94A3B8" uuid="t0000000-0001-0000-0000-000000000006"/>
+                    <textElement textAlignment="Right" verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="8"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA["Period: " + (new java.text.SimpleDateFormat("yyyy-MM-dd")).format($P{StartDate})]]></textFieldExpression>
+                </textField>
+                <textField>
+                    <reportElement x="410" y="40" width="135" height="14" forecolor="#38BDF8" uuid="t0000000-0001-0000-0000-000000000007"/>
+                    <textElement textAlignment="Right" verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="8" isBold="true"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA["Code: " + $P{CompanyCode}]]></textFieldExpression>
+                </textField>
+            </frame>
+            <frame>
+                <reportElement x="0" y="74" width="555" height="42" uuid="t0000000-0002-0000-0000-000000000001"/>
+                <rectangle radius="3">
+                    <reportElement style="CardBoxStyle" x="0" y="0" width="132" height="40" backcolor="#EFF6FF" mode="Opaque" uuid="t0000000-0002-0000-0000-000000000002"/>
+                    <graphicElement>
+                        <pen lineWidth="0.5" lineColor="#BFDBFE"/>
+                    </graphicElement>
+                </rectangle>
+                <staticText>
+                    <reportElement x="6" y="3" width="120" height="12" forecolor="#1E40AF" uuid="t0000000-0002-0000-0000-000000000003"/>
+                    <textElement>
+                        <font fontName="SansSerif" size="7" isBold="true"/>
+                    </textElement>
+                    <text><![CDATA[TOTAL TRANSACTIONS]]></text>
+                </staticText>
+                <textField evaluationTime="Report" pattern="#,##0">
+                    <reportElement x="6" y="16" width="120" height="20" forecolor="#1E3A8A" uuid="t0000000-0002-0000-0000-000000000004"/>
+                    <textElement verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="12" isBold="true"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA[$V{totalTransactionsCount}]]></textFieldExpression>
+                </textField>
+                <rectangle radius="3">
+                    <reportElement style="CardBoxStyle" x="140" y="0" width="132" height="40" backcolor="#ECFDF5" mode="Opaque" uuid="t0000000-0002-0000-0000-000000000005"/>
+                    <graphicElement>
+                        <pen lineWidth="0.5" lineColor="#A7F3D0"/>
+                    </graphicElement>
+                </rectangle>
+                <staticText>
+                    <reportElement x="146" y="3" width="120" height="12" forecolor="#065F46" uuid="t0000000-0002-0000-0000-000000000006"/>
+                    <textElement>
+                        <font fontName="SansSerif" size="7" isBold="true"/>
+                    </textElement>
+                    <text><![CDATA[TOTAL REVENUE]]></text>
+                </staticText>
+                <textField evaluationTime="Report" pattern="$ #,##0.00">
+                    <reportElement x="146" y="16" width="120" height="20" forecolor="#047857" uuid="t0000000-0002-0000-0000-000000000007"/>
+                    <textElement verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="12" isBold="true"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA[$V{grandTotalAmount}]]></textFieldExpression>
+                </textField>
+                <rectangle radius="3">
+                    <reportElement style="CardBoxStyle" x="280" y="0" width="132" height="40" backcolor="#FFFBEB" mode="Opaque" uuid="t0000000-0002-0000-0000-000000000008"/>
+                    <graphicElement>
+                        <pen lineWidth="0.5" lineColor="#FDE68A"/>
+                    </graphicElement>
+                </rectangle>
+                <staticText>
+                    <reportElement x="286" y="3" width="120" height="12" forecolor="#92400E" uuid="t0000000-0002-0000-0000-000000000009"/>
+                    <textElement>
+                        <font fontName="SansSerif" size="7" isBold="true"/>
+                    </textElement>
+                    <text><![CDATA[AVERAGE ORDER]]></text>
+                </staticText>
+                <textField evaluationTime="Report" pattern="$ #,##0.00">
+                    <reportElement x="286" y="16" width="120" height="20" forecolor="#B45309" uuid="t0000000-0002-0000-0000-000000000010"/>
+                    <textElement verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="12" isBold="true"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA[$V{avgOrderAmount}]]></textFieldExpression>
+                </textField>
+                <rectangle radius="3">
+                    <reportElement style="CardBoxStyle" x="420" y="0" width="135" height="40" backcolor="#F5F3FF" mode="Opaque" uuid="t0000000-0002-0000-0000-0000000011"/>
+                    <graphicElement>
+                        <pen lineWidth="0.5" lineColor="#DDD6FE"/>
+                    </graphicElement>
+                </rectangle>
+                <staticText>
+                    <reportElement x="426" y="3" width="120" height="12" forecolor="#5B21B6" uuid="t0000000-0002-0000-0000-0000000012"/>
+                    <textElement>
+                        <font fontName="SansSerif" size="7" isBold="true"/>
+                    </textElement>
+                    <text><![CDATA[TOTAL DISCOUNTS]]></text>
+                </staticText>
+                <textField evaluationTime="Report" pattern="$ #,##0.00" isBlankWhenNull="true">
+                    <reportElement x="426" y="16" width="120" height="20" forecolor="#6D28D9" uuid="t0000000-0002-0000-0000-0000000013">
+                        <printWhenExpression><![CDATA[$P{IncludeDiscounts}]]></printWhenExpression>
+                    </reportElement>
+                    <textElement verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="12" isBold="true"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA[$V{grandTotalDiscounts}]]></textFieldExpression>
+                </textField>
+            </frame>
+        </band>
+    </title>
+    <pageHeader>
+        <band height="24">
+            <line>
+                <reportElement x="0" y="0" width="555" height="1" forecolor="#CBD5E1" uuid="p0000000-0001-0000-0000-000000000001"/>
+                <graphicElement>
+                    <pen lineWidth="0.75" lineColor="#CBD5E1"/>
+                </graphicElement>
+            </line>
+            <staticText>
+                <reportElement x="0" y="4" width="280" height="16" forecolor="#475569" uuid="p0000000-0001-0000-0000-000000000002"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[CUSTOMER TRANSACTION & AUDIT LOG]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="300" y="4" width="255" height="16" forecolor="#64748B" uuid="p0000000-0001-0000-0000-000000000003"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA["User: " + $P{ExportUser} + " | Org: " + $P{CompanyCode}]]></textFieldExpression>
+            </textField>
+            <line>
+                <reportElement x="0" y="23" width="555" height="1" forecolor="#E2E8F0" uuid="p0000000-0001-0000-0000-000000000004"/>
+                <graphicElement>
+                    <pen lineWidth="0.5" lineColor="#E2E8F0"/>
+                </graphicElement>
+            </line>
+        </band>
+    </pageHeader>
+    <columnHeader>
+        <band height="22">
+            <rectangle>
+                <reportElement style="TableHeaderStyle" x="0" y="0" width="555" height="22" uuid="c0000000-0001-0000-0000-000000000001"/>
+            </rectangle>
+            <staticText>
+                <reportElement x="0" y="0" width="45" height="22" forecolor="#FFFFFF" uuid="c0000000-0001-0000-0000-000000000002"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[TX ID]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="45" y="0" width="115" height="22" forecolor="#FFFFFF" uuid="c0000000-0001-0000-0000-000000000003"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[  CUSTOMER NAME]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="160" y="0" width="70" height="22" forecolor="#FFFFFF" uuid="c0000000-0001-0000-0000-000000000004"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[CATEGORY]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="230" y="0" width="55" height="22" forecolor="#FFFFFF" uuid="c0000000-0001-0000-0000-000000000005"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[DATE]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="285" y="0" width="30" height="22" forecolor="#FFFFFF" uuid="c0000000-0001-0000-0000-000000000006"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[QTY]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="315" y="0" width="55" height="22" forecolor="#FFFFFF" uuid="c0000000-0001-0000-0000-000000000007"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[PRICE]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="370" y="0" width="55" height="22" forecolor="#FFFFFF" uuid="c0000000-0001-0000-0000-000000000008"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[DISCOUNT]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="425" y="0" width="60" height="22" forecolor="#FFFFFF" uuid="c0000000-0001-0000-0000-000000000009"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[STATUS]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="485" y="0" width="70" height="22" forecolor="#FFFFFF" uuid="c0000000-0001-0000-0000-000000000010"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <text><![CDATA[TOTAL  ]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+    <detail>
+        <band height="20">
+            <textField positionType="FixRelativeToTop" isBlankWhenNull="true">
+                <reportElement style="TableCellStyle" x="0" y="0" width="45" height="19" uuid="d0000000-0001-0000-0000-000000000001"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="Monospaced" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{transactionId}]]></textFieldExpression>
+            </textField>
+            <textField positionType="FixRelativeToTop" isBlankWhenNull="true">
+                <reportElement style="TableCellStyle" x="45" y="0" width="115" height="19" uuid="d0000000-0001-0000-0000-000000000002"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{customerName}]]></textFieldExpression>
+            </textField>
+            <textField positionType="FixRelativeToTop" isBlankWhenNull="true">
+                <reportElement style="TableCellStyle" x="160" y="0" width="70" height="19" uuid="d0000000-0001-0000-0000-000000000003"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{productCategory}]]></textFieldExpression>
+            </textField>
+            <textField positionType="FixRelativeToTop" pattern="yyyy-MM-dd" isBlankWhenNull="true">
+                <reportElement style="DateCell" x="230" y="0" width="55" height="19" uuid="d0000000-0001-0000-0000-000000000004"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{orderDate}]]></textFieldExpression>
+            </textField>
+            <textField positionType="FixRelativeToTop" pattern="#,##0" isBlankWhenNull="true">
+                <reportElement style="NumberCell" x="285" y="0" width="30" height="19" uuid="d0000000-0001-0000-0000-000000000005"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{orderQuantity}]]></textFieldExpression>
+            </textField>
+            <textField positionType="FixRelativeToTop" pattern="$ #,##0.00" isBlankWhenNull="true">
+                <reportElement style="CurrencyCell" x="315" y="0" width="55" height="19" uuid="d0000000-0001-0000-0000-000000000006"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{unitPrice}]]></textFieldExpression>
+            </textField>
+            <textField positionType="FixRelativeToTop" pattern="$ #,##0.00" isBlankWhenNull="true">
+                <reportElement style="CurrencyCell" x="370" y="0" width="55" height="19" forecolor="#DC2626" uuid="d0000000-0001-0000-0000-000000000007">
+                    <printWhenExpression><![CDATA[$P{IncludeDiscounts}]]></printWhenExpression>
+                </reportElement>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{discountAmount}]]></textFieldExpression>
+            </textField>
+            <textField positionType="FixRelativeToTop" isBlankWhenNull="true">
+                <reportElement style="TableCellStyle" x="425" y="0" width="60" height="19" uuid="d0000000-0001-0000-0000-000000000008"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{orderStatus}]]></textFieldExpression>
+            </textField>
+            <textField positionType="FixRelativeToTop" pattern="$ #,##0.00" isBlankWhenNull="true">
+                <reportElement style="CurrencyCell" x="485" y="0" width="70" height="19" forecolor="#0F172A" uuid="d0000000-0001-0000-0000-000000000009"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="8" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{totalAmount}]]></textFieldExpression>
+            </textField>
+            <line>
+                <reportElement positionType="FixRelativeToBottom" x="0" y="19" width="555" height="1" forecolor="#F1F5F9" uuid="d0000000-0001-0000-0000-000000000010"/>
+                <graphicElement>
+                    <pen lineWidth="0.5" lineColor="#F1F5F9"/>
+                </graphicElement>
+            </line>
+        </band>
+    </detail>
+    <columnFooter>
+        <band height="8">
+            <line>
+                <reportElement x="0" y="3" width="555" height="1" forecolor="#94A3B8" uuid="cf000000-0001-0000-0000-000000000001"/>
+                <graphicElement>
+                    <pen lineWidth="0.5" lineStyle="Dashed" lineColor="#94A3B8"/>
+                </graphicElement>
+            </line>
+        </band>
+    </columnFooter>
+    <pageFooter>
+        <band height="28">
+            <line>
+                <reportElement x="0" y="0" width="555" height="1" forecolor="#CBD5E1" uuid="pf000000-0001-0000-0000-000000000001"/>
+                <graphicElement>
+                    <pen lineWidth="0.75" lineColor="#CBD5E1"/>
+                </graphicElement>
+            </line>
+            <staticText>
+                <reportElement x="0" y="6" width="220" height="16" forecolor="#94A3B8" uuid="pf000000-0001-0000-0000-000000000002"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="7"/>
+                </textElement>
+                <text><![CDATA[ACME Internal Confidential - Generated Automatically]]></text>
+            </staticText>
+            <textField pattern="yyyy-MM-dd HH:mm:ss">
+                <reportElement x="220" y="6" width="130" height="16" forecolor="#94A3B8" uuid="pf000000-0001-0000-0000-000000000003"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="7"/>
+                </textElement>
+                <textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="415" y="6" width="90" height="16" forecolor="#94A3B8" uuid="pf000000-0001-0000-0000-000000000004"/>
+                <textElement textAlignment="Right" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="7"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+            </textField>
+            <textField evaluationTime="Report">
+                <reportElement x="505" y="6" width="50" height="16" forecolor="#94A3B8" uuid="pf000000-0001-0000-0000-000000000005"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="7"/>
+                </textElement>
+                <textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+    <summary>
+        <band height="440">
+            <frame>
+                <reportElement style="CardBoxStyle" x="0" y="4" width="555" height="36" backcolor="#F1F5F9" mode="Opaque" uuid="s0000000-0001-0000-0000-000000000001"/>
+                <box topPadding="4" leftPadding="8" bottomPadding="4" rightPadding="8">
+                    <pen lineWidth="1.0" lineColor="#CBD5E1"/>
+                </box>
+                <staticText>
+                    <reportElement x="0" y="4" width="160" height="20" forecolor="#0F172A" uuid="s0000000-0001-0000-0000-000000000002"/>
+                    <textElement verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="10" isBold="true"/>
+                    </textElement>
+                    <text><![CDATA[REPORT GRAND TOTALS:]]></text>
+                </staticText>
+                <staticText>
+                    <reportElement x="165" y="6" width="45" height="16" forecolor="#64748B" uuid="s0000000-0001-0000-0000-000000000003"/>
+                    <textElement textAlignment="Right" verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="8"/>
+                    </textElement>
+                    <text><![CDATA[Orders:]]></text>
+                </staticText>
+                <textField evaluationTime="Report" pattern="#,##0">
+                    <reportElement x="212" y="6" width="40" height="16" forecolor="#0F172A" uuid="s0000000-0001-0000-0000-000000000004"/>
+                    <textElement textAlignment="Right" verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="8" isBold="true"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA[$V{totalTransactionsCount}]]></textFieldExpression>
+                </textField>
+                <staticText>
+                    <reportElement x="260" y="6" width="60" height="16" forecolor="#64748B" uuid="s0000000-0001-0000-0000-000000000005"/>
+                    <textElement textAlignment="Right" verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="8"/>
+                    </textElement>
+                    <text><![CDATA[Discounts:]]></text>
+                </staticText>
+                <textField evaluationTime="Report" pattern="$ #,##0.00" isBlankWhenNull="true">
+                    <reportElement x="322" y="6" width="70" height="16" forecolor="#DC2626" uuid="s0000000-0001-0000-0000-000000000006">
+                        <printWhenExpression><![CDATA[$P{IncludeDiscounts}]]></printWhenExpression>
+                    </reportElement>
+                    <textElement textAlignment="Right" verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="8" isBold="true"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA[$V{grandTotalDiscounts}]]></textFieldExpression>
+                </textField>
+                <staticText>
+                    <reportElement x="400" y="4" width="45" height="20" forecolor="#64748B" uuid="s0000000-0001-0000-0000-000000000007"/>
+                    <textElement textAlignment="Right" verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="8"/>
+                    </textElement>
+                    <text><![CDATA[Total:]]></text>
+                </staticText>
+                <textField evaluationTime="Report" pattern="$ #,##0.00">
+                    <reportElement x="448" y="2" width="90" height="22" forecolor="#1E40AF" uuid="s0000000-0001-0000-0000-000000000008"/>
+                    <textElement textAlignment="Right" verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="11" isBold="true"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA[$V{grandTotalAmount}]]></textFieldExpression>
+                </textField>
+            </frame>
+            <barChart>
+                <chart isShowLegend="true" evaluationTime="Report">
+                    <reportElement x="0" y="48" width="270" height="140" uuid="s0000000-0002-0000-0000-000000000001">
+                        <printWhenExpression><![CDATA[$P{ShowSummaryCharts}]]></printWhenExpression>
+                    </reportElement>
+                    <chartTitle position="Top">
+                        <titleExpression><![CDATA["Revenue by Region"]]></titleExpression>
+                    </chartTitle>
+                    <chartSubtitle>
+                        <subtitleExpression><![CDATA["Consolidated Geographic Distribution"]]></subtitleExpression>
+                    </chartSubtitle>
+                    <chartLegend textColor="#1E293B" backgroundColor="#FFFFFF"/>
+                </chart>
+                <categoryDataset>
+                    <categorySeries>
+                        <seriesExpression><![CDATA["Sales"]]></seriesExpression>
+                        <categoryExpression><![CDATA[$F{region}]]></categoryExpression>
+                        <valueExpression><![CDATA[$F{totalAmount}]]></valueExpression>
+                        <labelExpression><![CDATA[$F{region}]]></labelExpression>
+                    </categorySeries>
+                </categoryDataset>
+                <barPlot isShowTickMarks="true" isShowTickLabels="true">
+                    <plot orientation="Vertical"/>
+                    <itemLabel/>
+                </barPlot>
+            </barChart>
+            <pieChart>
+                <chart isShowLegend="true" evaluationTime="Report">
+                    <reportElement x="285" y="48" width="270" height="140" uuid="s0000000-0003-0000-0000-000000000001">
+                        <printWhenExpression><![CDATA[$P{ShowSummaryCharts}]]></printWhenExpression>
+                    </reportElement>
+                    <chartTitle position="Top">
+                        <titleExpression><![CDATA["Orders by Fulfillment Status"]]></titleExpression>
+                    </chartTitle>
+                    <chartLegend textColor="#1E293B" backgroundColor="#FFFFFF"/>
+                </chart>
+                <pieDataset>
+                    <keyExpression><![CDATA[$F{orderStatus}]]></keyExpression>
+                    <valueExpression><![CDATA[$F{totalAmount}]]></valueExpression>
+                    <labelExpression><![CDATA[$F{orderStatus} + " - " + $F{totalAmount}]]></labelExpression>
+                </pieDataset>
+                <piePlot isCircular="true">
+                    <plot/>
+                    <itemLabel/>
+                </piePlot>
+            </pieChart>
+            <lineChart>
+                <chart isShowLegend="true" evaluationTime="Report">
+                    <reportElement x="0" y="196" width="555" height="110" uuid="s0000000-0004-0000-0000-000000000001">
+                        <printWhenExpression><![CDATA[$P{ShowSummaryCharts}]]></printWhenExpression>
+                    </reportElement>
+                    <chartTitle position="Top">
+                        <titleExpression><![CDATA["Sales Trend over Timeline"]]></titleExpression>
+                    </chartTitle>
+                    <chartLegend textColor="#1E293B" backgroundColor="#FFFFFF"/>
+                </chart>
+                <categoryDataset>
+                    <categorySeries>
+                        <seriesExpression><![CDATA["Daily Revenue"]]></seriesExpression>
+                        <categoryExpression><![CDATA[$F{orderDate}]]></categoryExpression>
+                        <valueExpression><![CDATA[$F{totalAmount}]]></valueExpression>
+                    </categorySeries>
+                </categoryDataset>
+                <linePlot isShowLines="true" isShowShapes="true">
+                    <plot/>
+                    <categoryAxisFormat>
+                        <axisFormat/>
+                    </categoryAxisFormat>
+                    <valueAxisFormat>
+                        <axisFormat/>
+                    </valueAxisFormat>
+                </linePlot>
+            </lineChart>
+            <subreport>
+                <reportElement positionType="Float" x="0" y="314" width="555" height="42" uuid="s0000000-0005-0000-0000-000000000001"/>
+                <subreportParameter name="ParentCompanyCode">
+                    <subreportParameterExpression><![CDATA[$P{CompanyCode}]]></subreportParameterExpression>
+                </subreportParameter>
+                <subreportParameter name="FiscalYear">
+                    <subreportParameterExpression><![CDATA[$P{FiscalYear}]]></subreportParameterExpression>
+                </subreportParameter>
+                <subreportParameter name="Department">
+                    <subreportParameterExpression><![CDATA[$P{DepartmentFilter}]]></subreportParameterExpression>
+                </subreportParameter>
+                <connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+                <subreportExpression><![CDATA["subreports/Customer_Audit_Detail_Subreport.jasper"]]></subreportExpression>
+            </subreport>
+            <staticText>
+                <reportElement positionType="Float" stretchType="RelativeToTallestObject" x="0" y="362" width="555" height="40" forecolor="#64748B" uuid="s0000000-0006-0000-0000-000000000001">
+                    <property name="net.sf.jasperreports.export.html.markup" value="html"/>
+                </reportElement>
+                <textElement textAlignment="Justified" markup="html">
+                    <font fontName="SansSerif" size="7"/>
+                </textElement>
+                <text><![CDATA[<b>EXECUTIVE COMPLIANCE &amp; AUDIT DISCLAIMER:</b> This commercial report contains proprietary operational metrics generated in accordance with internal corporate accounting policies. The data represented herein includes transaction records, aggregated regional revenues, applicable discounts, and fulfillment classifications. Any unauthorized reproduction, dissemination, or distribution of this document without written authorization from the Chief Compliance Officer is strictly prohibited. Figures are subject to year-end statutory audit reconciliations.]]></text>
+            </staticText>
+            <textField positionType="Float" isStretchWithOverflow="true" isBlankWhenNull="true">
+                <reportElement x="0" y="406" width="555" height="28" forecolor="#475569" uuid="s0000000-0007-0000-0000-000000000001"/>
+                <textElement textAlignment="Justified" markup="styled">
+                    <font fontName="Serif" size="7" isItalic="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA["<style isBold='true'>Notes on Data Integrity:</style> All customer records with VIP designations have been validated against the global customer registry. Unassigned shipping dates or null discounts reflect pending logistics confirmation or standard retail pricing schedules without promotional adjustments."]]></textFieldExpression>
+            </textField>
+        </band>
+    </summary>
+    <noData>
+        <band height="120">
+            <rectangle radius="4">
+                <reportElement x="40" y="15" width="475" height="90" backcolor="#FFFBEB" mode="Opaque" uuid="n0000000-0001-0000-0000-000000000001"/>
+                <graphicElement>
+                    <pen lineWidth="1.0" lineColor="#F59E0B"/>
+                </graphicElement>
+            </rectangle>
+            <ellipse>
+                <reportElement x="60" y="35" width="40" height="40" forecolor="#FEF3C7" backcolor="#FDE68A" mode="Opaque" uuid="n0000000-0001-0000-0000-000000000002"/>
+                <graphicElement>
+                    <pen lineWidth="1.0" lineColor="#F59E0B"/>
+                </graphicElement>
+            </ellipse>
+            <staticText>
+                <reportElement x="60" y="35" width="40" height="40" forecolor="#B45309" uuid="n0000000-0001-0000-0000-000000000003"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="18" isBold="true"/>
+                </textElement>
+                <text><![CDATA[!]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="115" y="28" width="380" height="20" forecolor="#92400E" uuid="n0000000-0001-0000-0000-000000000004"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="12" isBold="true"/>
+                </textElement>
+                <text><![CDATA[NO SALES TRANSACTIONS FOUND]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="115" y="50" width="380" height="42" forecolor="#78350F" uuid="n0000000-0001-0000-0000-000000000005"/>
+                <textElement>
+                    <font fontName="SansSerif" size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA["No transaction records were identified matching the filter criteria for Company Code [" + $P{CompanyCode} + "] and Minimum Quantity [" + $P{MinOrderQuantity} + "]. Please verify your query parameters and date ranges."]]></textFieldExpression>
+            </textField>
+        </band>
+    </noData>
+</jasperReport>

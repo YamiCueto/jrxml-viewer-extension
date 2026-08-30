@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
-import { XMLParser } from 'fast-xml-parser';
+import { parseJrxmlDocument } from './model/jrxmlDocumentParser';
+import { JrxmlElement } from './model/jrxmlDocumentModel';
 
 export class JrxmlPropertiesProvider implements vscode.TreeDataProvider<PropertyItem> {
     private _onDidChangeTreeData: vscode.EventEmitter<PropertyItem | undefined | null | void> = new vscode.EventEmitter<PropertyItem | undefined | null | void>();
@@ -8,7 +9,6 @@ export class JrxmlPropertiesProvider implements vscode.TreeDataProvider<Property
     private currentDocument: vscode.TextDocument | undefined;
 
     constructor() {
-        // Listen to active editor changes
         vscode.window.onDidChangeActiveTextEditor(editor => {
             if (editor && editor.document.fileName.endsWith('.jrxml')) {
                 this.currentDocument = editor.document;
@@ -16,7 +16,6 @@ export class JrxmlPropertiesProvider implements vscode.TreeDataProvider<Property
             }
         });
 
-        // Listen to document changes
         vscode.workspace.onDidChangeTextDocument(e => {
             if (e.document === this.currentDocument) {
                 this.refresh();
@@ -43,86 +42,73 @@ export class JrxmlPropertiesProvider implements vscode.TreeDataProvider<Property
         }
 
         if (element) {
-            // Return children of this property if any
             return element.children || [];
         }
 
         try {
             const xmlContent = this.currentDocument.getText();
-            const parser = new XMLParser({
-                ignoreAttributes: false,
-                attributeNamePrefix: '@_',
-                textNodeName: '#text',
-                parseAttributeValue: true,
-                trimValues: true
-            });
-            const parsed = parser.parse(xmlContent);
+            const doc = parseJrxmlDocument(xmlContent);
+            const report = doc.report;
 
             const items: PropertyItem[] = [];
 
-            // Document properties
-            if (parsed.jasperReport) {
-                const report = parsed.jasperReport;
-                
-                // Basic info
-                const basicInfo = new PropertyItem('Document Info', '', 'category');
-                basicInfo.children = [
-                    new PropertyItem('Name', report['@_name'] || 'Unnamed', 'property'),
-                    new PropertyItem('Page Width', `${report['@_pageWidth'] || 'N/A'}px`, 'property'),
-                    new PropertyItem('Page Height', `${report['@_pageHeight'] || 'N/A'}px`, 'property'),
-                    new PropertyItem('Orientation', report['@_orientation'] || 'Portrait', 'property'),
-                ];
-                items.push(basicInfo);
+            const basicInfo = new PropertyItem('Document Info', '', 'category');
+            basicInfo.children = [
+                new PropertyItem('Name', report.name, 'property'),
+                new PropertyItem('Page Width', `${report.pageWidth}px`, 'property'),
+                new PropertyItem('Page Height', `${report.pageHeight}px`, 'property'),
+                new PropertyItem('Orientation', report.orientation, 'property')
+            ];
+            items.push(basicInfo);
 
-                // Margins
-                const margins = new PropertyItem('Margins', '', 'category');
-                margins.children = [
-                    new PropertyItem('Top', `${report['@_topMargin'] || 0}px`, 'property'),
-                    new PropertyItem('Bottom', `${report['@_bottomMargin'] || 0}px`, 'property'),
-                    new PropertyItem('Left', `${report['@_leftMargin'] || 0}px`, 'property'),
-                    new PropertyItem('Right', `${report['@_rightMargin'] || 0}px`, 'property'),
-                ];
-                items.push(margins);
+            const margins = new PropertyItem('Margins', '', 'category');
+            margins.children = [
+                new PropertyItem('Top', `${report.topMargin}px`, 'property'),
+                new PropertyItem('Bottom', `${report.bottomMargin}px`, 'property'),
+                new PropertyItem('Left', `${report.leftMargin}px`, 'property'),
+                new PropertyItem('Right', `${report.rightMargin}px`, 'property')
+            ];
+            items.push(margins);
 
-                // Bands
-                const bands = this.extractBands(report);
-                if (bands.length > 0) {
-                    const bandsItem = new PropertyItem('Bands', `${bands.length} bands`, 'category');
-                    bandsItem.children = bands.map(band => 
-                        new PropertyItem(band.type, `height: ${band.height}px`, 'band')
-                    );
-                    items.push(bandsItem);
-                }
+            if (report.bands.length > 0) {
+                const bandsItem = new PropertyItem('Bands', `${report.bands.length} bands`, 'category');
+                bandsItem.children = report.bands.map(band =>
+                    new PropertyItem(band.type, `height: ${band.height}px`, 'band')
+                );
+                items.push(bandsItem);
+            }
 
-                // Parameters
-                const parameters = this.extractParameters(report);
-                if (parameters.length > 0) {
-                    const paramsItem = new PropertyItem('Parameters', `${parameters.length} parameters`, 'category');
-                    paramsItem.children = parameters.map(param => 
-                        new PropertyItem(param.name, param.class, 'parameter')
-                    );
-                    items.push(paramsItem);
-                }
+            if (report.parameters.length > 0) {
+                const paramsItem = new PropertyItem('Parameters', `${report.parameters.length} parameters`, 'category');
+                paramsItem.children = report.parameters.map(param =>
+                    new PropertyItem(param.name, param.class, 'parameter')
+                );
+                items.push(paramsItem);
+            }
 
-                // Variables
-                const variables = this.extractVariables(report);
-                if (variables.length > 0) {
-                    const varsItem = new PropertyItem('Variables', `${variables.length} variables`, 'category');
-                    varsItem.children = variables.map(v => 
-                        new PropertyItem(v.name, v.class, 'variable')
-                    );
-                    items.push(varsItem);
-                }
+            if (report.variables.length > 0) {
+                const varsItem = new PropertyItem('Variables', `${report.variables.length} variables`, 'category');
+                varsItem.children = report.variables.map(v =>
+                    new PropertyItem(v.name, `${v.class} (${v.calculation})`, 'variable')
+                );
+                items.push(varsItem);
+            }
 
-                // Element counts
-                const elementCounts = this.countElements(report);
-                if (elementCounts.length > 0) {
-                    const countsItem = new PropertyItem('Element Statistics', '', 'category');
-                    countsItem.children = elementCounts.map(ec => 
-                        new PropertyItem(ec.type, `${ec.count} elements`, 'stat')
-                    );
-                    items.push(countsItem);
-                }
+            if (report.styles.length > 0) {
+                const stylesItem = new PropertyItem('Styles', `${report.styles.length} styles`, 'category');
+                stylesItem.children = report.styles.map(s =>
+                    new PropertyItem(s.name, s.parentStyle ? `extends ${s.parentStyle}` : (s.isDefault ? 'default' : 'custom'), 'property')
+                );
+                items.push(stylesItem);
+            }
+
+            const elementCounts = this.countAllElements(report.bands);
+            if (elementCounts.length > 0) {
+                const countsItem = new PropertyItem('Element Statistics', '', 'category');
+                countsItem.children = elementCounts.map(ec =>
+                    new PropertyItem(ec.type, `${ec.count} elements`, 'stat')
+                );
+                items.push(countsItem);
             }
 
             return items;
@@ -131,70 +117,22 @@ export class JrxmlPropertiesProvider implements vscode.TreeDataProvider<Property
         }
     }
 
-    private extractBands(report: any): Array<{type: string, height: string}> {
-        const bands = [];
-        const bandTypes = ['title', 'pageHeader', 'columnHeader', 'detail', 'columnFooter', 'pageFooter', 'summary'];
-        
-        for (const bandType of bandTypes) {
-            if (report[bandType]) {
-                bands.push({
-                    type: bandType,
-                    height: report[bandType]['@_height'] || '0'
-                });
-            }
-        }
-        
-        return bands;
-    }
-
-    private extractParameters(report: any): Array<{name: string, class: string}> {
-        const params = [];
-        const paramArray = Array.isArray(report.parameter) ? report.parameter : (report.parameter ? [report.parameter] : []);
-        
-        for (const param of paramArray) {
-            params.push({
-                name: param['@_name'] || 'unnamed',
-                class: param['@_class'] || 'java.lang.String'
-            });
-        }
-        
-        return params;
-    }
-
-    private extractVariables(report: any): Array<{name: string, class: string}> {
-        const vars = [];
-        const varArray = Array.isArray(report.variable) ? report.variable : (report.variable ? [report.variable] : []);
-        
-        for (const v of varArray) {
-            vars.push({
-                name: v['@_name'] || 'unnamed',
-                class: v['@_class'] || 'java.lang.String'
-            });
-        }
-        
-        return vars;
-    }
-
-    private countElements(report: any): Array<{type: string, count: number}> {
+    private countAllElements(bands: Array<{ elements: JrxmlElement[] }>): Array<{ type: string; count: number }> {
         const counts = new Map<string, number>();
-        
-        const countInBand = (band: any) => {
-            if (!band) return;
-            
-            const elements = ['staticText', 'textField', 'image', 'rectangle', 'ellipse', 'line', 'chart', 'subreport'];
-            for (const elemType of elements) {
-                if (band[elemType]) {
-                    const elemArray = Array.isArray(band[elemType]) ? band[elemType] : [band[elemType]];
-                    counts.set(elemType, (counts.get(elemType) || 0) + elemArray.length);
-                }
+
+        const visit = (el: JrxmlElement) => {
+            counts.set(el.type, (counts.get(el.type) || 0) + 1);
+            if (el.children) {
+                el.children.forEach(visit);
             }
         };
-        
-        const bandTypes = ['title', 'pageHeader', 'columnHeader', 'detail', 'columnFooter', 'pageFooter', 'summary'];
-        for (const bandType of bandTypes) {
-            countInBand(report[bandType]);
+
+        for (const band of bands) {
+            for (const el of band.elements) {
+                visit(el);
+            }
         }
-        
+
         return Array.from(counts.entries()).map(([type, count]) => ({ type, count }));
     }
 }
