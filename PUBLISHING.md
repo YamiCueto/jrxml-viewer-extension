@@ -41,12 +41,12 @@ node tests/charts/run-chart-tests.js
 
 # 2. Confirmar cambios y crear tag
 git add .
-git commit -m "Release v0.2.0"
-git tag v0.2.0
+git commit -m "Release v0.2.1"
+git tag v0.2.1
 
 # 3. Empujar commits y tags a GitHub
 git push origin main
-git push origin v0.2.0
+git push origin v0.2.1
 ```
 
 ---
@@ -67,7 +67,7 @@ npm run compile
 # Generar el archivo .vsix
 npx vsce package
 ```
-Esto genera el archivo `jrxml-viewer-0.2.0.vsix` en la raíz del proyecto.
+Esto genera el archivo `jrxml-viewer-0.2.1.vsix` en la raíz del proyecto.
 
 ### Inspección del Paquete:
 ```bash
@@ -91,8 +91,8 @@ O bien subir el archivo `.vsix` directamente a través del portal de gestión:
 
 ## 4. Checklist Pre-Release
 
-- [ ] Versión actualizada en `package.json` (e.g. `"version": "0.2.0"`).
-- [ ] Entradas de cambios documentadas en `CHANGELOG.md` bajo `## [0.2.0] - YYYY-MM-DD`.
+- [ ] Versión actualizada en `package.json` (e.g. `"version": "0.2.1"`).
+- [ ] Entradas de cambios documentadas en `CHANGELOG.md` bajo `## [0.2.1] - YYYY-MM-DD`.
 - [ ] Documentación actualizada en `README.md` y `README.es.md`.
 - [ ] Compilación TypeScript exitosa sin errores (`npm run compile` y `npx tsc --noEmit`).
 - [ ] Todas las suites de pruebas pasando al 100%.

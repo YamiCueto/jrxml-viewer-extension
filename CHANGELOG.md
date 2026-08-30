@@ -2,6 +2,19 @@
 
 All notable changes to the "jrxml-viewer" extension will be documented in this file.
 
+## [0.2.1] - 2026-08-30
+
+### Added
+- **Playwright E2E & Visual Evidence Suite**: Automated end-to-end testing pipeline with high-fidelity VS Code workbench harness, page canvas verification, SVG chart assertions, and automated screenshot generation.
+- **Release Pipeline Version Gate**: CI/CD automated validation ensuring strict consistency between Git release tags (`v*.*.*`) and `package.json` version before packaging and publishing.
+
+### Improved
+- **VSIX Packaging Optimization**: Excluded internal development tools, testing scripts, screenshots, and linter configurations from the final distribution package for a cleaner, lightweight install footprint.
+- **Release Workflow Automation**: Enhanced GitHub Actions release pipeline with explicit type checking, linting, test suite execution, and fail-fast Marketplace error reporting.
+
+### Fixed
+- Fixed release workflow packaging mismatch where manifest version did not match release tag.
+
 ## [0.2.0] - 2026-08-30
 
 ### Added

@@ -21,6 +21,27 @@ jobs:
         with:
           node-version: '20.x'
 
+      - name: Synchronize package version from Git tag
+        id: get_version
+        run: |
+          RAW_TAG="${GITHUB_REF#refs/tags/}"
+          echo "Processing Git Tag: $RAW_TAG"
+
+          if [[ ! "$RAW_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Invalid SemVer tag format '$RAW_TAG'. Expected format: vMAJOR.MINOR.PATCH (e.g. v0.2.2)"
+            exit 1
+          fi
+
+          VERSION="${RAW_TAG#v}"
+          echo "Clean SemVer Version: $VERSION"
+
+          npm version "$VERSION" --no-git-tag-version --allow-same-version
+
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          echo "Verified package.json version: $PKG_VERSION"
+
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Install dependencies
         run: npm ci
 
@@ -47,15 +68,14 @@ jobs:
       - name: Package extension
         run: npx vsce package
 
-      - name: Get version from tag
-        id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
-
       - name: Extract changelog for this version
         id: changelog
         run: |
-          VERSION=${{ steps.get_version.outputs.VERSION }}
+          VERSION="${{ steps.get_version.outputs.VERSION }}"
           CHANGELOG=$(awk "/## \[$VERSION\]/,/## \[/" CHANGELOG.md | sed '1d;$d')
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="Release v${VERSION}"
+          fi
           echo "CHANGELOG<<EOF" >> "$GITHUB_OUTPUT"
           echo "$CHANGELOG" >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"

@@ -3,10 +3,16 @@
 .github/**
 docs/**
 tests/**
+screenshots/**
+playwright.config.js
+test-results/**
+playwright-report/**
 src/**
 .gitignore
 .yarnrc
 *.vsix
+.hintrc
+RELEASE.md
 vsc-extension-quickstart.md
 **/tsconfig.json
 **/.eslintrc.json
