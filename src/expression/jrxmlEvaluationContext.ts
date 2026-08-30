@@ -154,7 +154,7 @@ export function calculateAggregatedVariables(
 }
 
 function extractFieldNameFromExpression(raw?: string): string | null {
-    if (!raw) return null;
+    if (!raw) {return null;}
     const match = raw.trim().match(/^\$F\{([^}]+)\}$/);
     return match ? match[1] : null;
 }

@@ -90,8 +90,8 @@ function evaluateAstOrTokens(expr: string, context: EvaluationContext): Intermed
 
         for (const part of concatParts) {
             const res = evaluateAstOrTokens(part, context);
-            if (res.status === 'MISSING') isMissing = true;
-            if (res.status === 'UNSUPPORTED') isUnsupported = true;
+            if (res.status === 'MISSING') {isMissing = true;}
+            if (res.status === 'UNSUPPORTED') {isUnsupported = true;}
             if (typeof res.value === 'string' || part.startsWith('"') || part.startsWith("'")) {
                 hasString = true;
             }

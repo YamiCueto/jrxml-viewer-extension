@@ -1,190 +1,100 @@
-# 📦 Guía de Publicación - JRXML Viewer Extension
+# 📦 Guía de Publicación - JRXML Viewer & Editor
 
-## Preparativos antes de publicar
-
-### 1. Actualizar información personal en package.json
-
-Actualiza estos campos con tu información real:
-
-```json
-{
-  "publisher": "yamid",  // Tu nombre de publicador en el Marketplace
-  "author": {
-    "name": "Yamid Cueto Mazo",
-    "email": "yamidcuetomazo@hotmail.com"
-  }
-}
-```
-
-### 2. Crear un ícono para la extensión
-
-Crea un archivo `media/icon.png` con las siguientes especificaciones:
-- Tamaño: 128x128 píxeles
-- Formato: PNG
-- Fondo transparente recomendado
-- Debe ser representativo de JasperReports/JRXML
-
-### 3. Actualizar URLs del repositorio
-
-En `package.json`, actualiza las URLs:
-
-```json
-{
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/YamiCueto/jrxml-viewer-extension.git"
-  },
-  "bugs": {
-    "url": "https://github.com/YamiCueto/jrxml-viewer-extension/issues"
-  },
-  "homepage": "https://github.com/YamiCueto/jrxml-viewer-extension#readme"
-}
-```
-
-## Pasos para publicar en VS Code Marketplace
-
-### Paso 1: Crear cuenta en Azure DevOps
-
-1. Ve a https://dev.azure.com
-2. Crea una cuenta (usa tu cuenta Microsoft/GitHub)
-3. Crea una organización
-
-### Paso 2: Generar Personal Access Token (PAT)
-
-1. En Azure DevOps, ve a User Settings → Personal Access Tokens
-2. Click en "New Token"
-3. Configura:
-   - **Name**: `vsce-publish`
-   - **Organization**: Tu organización
-   - **Expiration**: 90 días (o más)
-   - **Scopes**: Selecciona "Marketplace" → "Manage"
-4. Copia el token (¡guárdalo de forma segura!)
-
-### Paso 3: Crear cuenta de publicador
-
-1. Ve a https://marketplace.visualstudio.com/manage
-2. Click en "Create publisher"
-3. Configura:
-   - **ID**: `YamidCuetoMazo` (debe coincidir con package.json)
-   - **Display Name**: Yamid Cueto Mazo
-   - **Email**: yamidcuetomazo@hotmail.com
-
-### Paso 4: Instalar vsce (si no lo tienes)
-
-```bash
-npm install -g @vscode/vsce
-```
-
-### Paso 5: Login con vsce
-
-```bash
-vsce login yamid
-# Ingresa tu Personal Access Token cuando lo pida
-```
-
-### Paso 6: Empaquetar la extensión
-
-```bash
-# Limpiar y compilar
-npm run compile
-
-# Crear el paquete .vsix
-vsce package
-```
-
-Esto creará un archivo `jrxml-viewer-0.1.0.vsix`
-
-### Paso 7: Publicar
-
-```bash
-# Publicar en el Marketplace
-vsce publish
-```
-
-O puedes hacerlo manual:
-1. Ve a https://marketplace.visualstudio.com/manage/publishers/YamidCuetoMazo
-2. Click en "New extension" → "Visual Studio Code"
-3. Arrastra el archivo `.vsix`
-
-## Verificación post-publicación
-
-1. **Espera 5-10 minutos** para que la extensión se procese
-2. Verifica en: `https://marketplace.visualstudio.com/items?itemName=yamid.jrxml-viewer`
-3. Instala desde VS Code: `Ctrl+P` → `ext install yamid.jrxml-viewer`
-
-## Actualizaciones futuras
-
-Para publicar actualizaciones:
-
-1. Actualiza la versión en `package.json`:
-   ```json
-   "version": "0.2.0"
-   ```
-
-2. Actualiza `CHANGELOG.md` con los cambios
-
-3. Compila y publica:
-   ```bash
-   npm run compile
-   vsce publish
-   ```
-
-O puedes usar comandos automáticos:
-```bash
-# Incrementar versión patch (0.1.0 → 0.1.1)
-vsce publish patch
-
-# Incrementar versión minor (0.1.0 → 0.2.0)
-vsce publish minor
-
-# Incrementar versión major (0.1.0 → 1.0.0)
-vsce publish major
-```
-
-## Checklist antes de publicar
-
-- [ ] Ícono creado (`media/icon.png`)
-- [ ] Email actualizado en `package.json`
-- [ ] URLs de GitHub actualizadas
-- [ ] README.md completo y sin errores
-- [ ] CHANGELOG.md actualizado
-- [ ] Código compilado sin errores (`npm run compile`)
-- [ ] Extensión probada en modo desarrollo (F5)
-- [ ] Personal Access Token creado
-- [ ] Cuenta de publicador creada
-- [ ] Licencia revisada
-
-## Comandos útiles
-
-```bash
-# Ver detalles del paquete sin publicar
-vsce package --out test.vsix
-
-# Listar archivos que se incluirán
-vsce ls
-
-# Ver información de la extensión
-vsce show yamid.jrxml-viewer
-
-# Desinstalar desde el Marketplace (si es necesario)
-vsce unpublish yamid.jrxml-viewer
-```
-
-## Recursos adicionales
-
-- [Guía oficial de publicación](https://code.visualstudio.com/api/working-with-extensions/publishing-extension)
-- [Marketplace Publisher Portal](https://marketplace.visualstudio.com/manage)
-- [Azure DevOps](https://dev.azure.com)
-
-## Notas importantes
-
-- La primera publicación puede tardar hasta 24 horas en aparecer
-- Las actualizaciones suelen ser más rápidas (5-10 minutos)
-- El nombre de publicador (`yamid`) debe ser único en el Marketplace
-- Si el nombre está tomado, elige otro y actualiza package.json
-- Mantén tu Personal Access Token seguro y privado
-- Los tokens expiran, tendrás que renovarlos periódicamente
+Este documento describe el flujo y los requisitos para empaquetar y publicar nuevas versiones de la extensión **JRXML Viewer & Editor** (`YamidCuetoMazo.jrxml-viewer`) en el Visual Studio Code Marketplace y GitHub Releases.
 
 ---
 
-**¡Buena suerte con la publicación! 🚀**
+## 1. Información General de Publicación
+
+- **Publisher ID:** `YamidCuetoMazo`
+- **Extension Name:** `jrxml-viewer`
+- **Identificador en Marketplace:** `YamidCuetoMazo.jrxml-viewer`
+- **Marketplace URL:** `https://marketplace.visualstudio.com/items?itemName=YamidCuetoMazo.jrxml-viewer`
+- **Repositorio:** `https://github.com/YamiCueto/jrxml-viewer-extension`
+
+---
+
+## 2. Automatización con GitHub Actions (Recomendado)
+
+El repositorio cuenta con un flujo automatizado en [`.github/workflows/release.yml`](./.github/workflows/release.yml) que se activa automáticamente al empujar un tag de versión (`v*.*.*`).
+
+### Flujo Automático:
+1. Verifica el código y compila TypeScript (`npm run compile`).
+2. Empaqueta la extensión generando el archivo `.vsix`.
+3. Extrae la sección correspondiente de [`CHANGELOG.md`](./CHANGELOG.md).
+4. Crea una Release en GitHub adjuntando el `.vsix`.
+5. Publica automáticamente la nueva versión en el VS Code Marketplace usando el secret `VSCE_PAT`.
+
+### Pasos para Liberar una Nueva Versión:
+
+```bash
+# 1. Asegurar que las suites de pruebas pasen y el código compile
+npm run compile
+node tests/run-tests.js
+node tests/layout/run-layout-tests.js
+node tests/render/run-render-tests.js
+node tests/editing/run-editing-tests.js
+node tests/expression/run-expression-tests.js
+node tests/style/run-style-tests.js
+node tests/visual/run-visual-tests.js
+node tests/charts/run-chart-tests.js
+
+# 2. Confirmar cambios y crear tag
+git add .
+git commit -m "Release v0.2.0"
+git tag v0.2.0
+
+# 3. Empujar commits y tags a GitHub
+git push origin main
+git push origin v0.2.0
+```
+
+---
+
+## 3. Publicación Manual Local (Alternativa)
+
+Si requieres empaquetar o publicar localmente mediante la herramienta CLI oficial `@vscode/vsce`:
+
+### Prerrequisitos:
+- Tener instalado `@vscode/vsce` globalmente o usar `npx vsce`.
+- Un Personal Access Token (PAT) de Azure DevOps configurado con el scope `Marketplace (Manage)`.
+
+### Empaquetado Local:
+```bash
+# Compilar el proyecto
+npm run compile
+
+# Generar el archivo .vsix
+npx vsce package
+```
+Esto genera el archivo `jrxml-viewer-0.2.0.vsix` en la raíz del proyecto.
+
+### Inspección del Paquete:
+```bash
+# Listar los archivos que se incluirán en el .vsix
+npx vsce ls
+```
+
+### Publicación Manual:
+```bash
+# Iniciar sesión con el publisher
+npx vsce login YamidCuetoMazo
+
+# Publicar la versión
+npx vsce publish
+```
+
+O bien subir el archivo `.vsix` directamente a través del portal de gestión:
+[https://marketplace.visualstudio.com/manage/publishers/YamidCuetoMazo](https://marketplace.visualstudio.com/manage/publishers/YamidCuetoMazo)
+
+---
+
+## 4. Checklist Pre-Release
+
+- [ ] Versión actualizada en `package.json` (e.g. `"version": "0.2.0"`).
+- [ ] Entradas de cambios documentadas en `CHANGELOG.md` bajo `## [0.2.0] - YYYY-MM-DD`.
+- [ ] Documentación actualizada en `README.md` y `README.es.md`.
+- [ ] Compilación TypeScript exitosa sin errores (`npm run compile` y `npx tsc --noEmit`).
+- [ ] Todas las suites de pruebas pasando al 100%.
+- [ ] Archivo `.vscodeignore` actualizado para excluir directorios internos de pruebas (`tests/`, `docs/`, `.github/`).
+- [ ] Secret `VSCE_PAT` configurado en los Secrets del repositorio GitHub (`Settings -> Secrets and variables -> Actions`).

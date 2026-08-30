@@ -119,17 +119,17 @@ export function renderElement(el: LayoutElement): string {
         };
         const textAlign = alignMap[hAlign] || hAlign.toLowerCase();
         styles.push(`text-align: ${textAlign}`);
-        if (hAlign === 'Center') justifyProp = 'center';
-        else if (hAlign === 'Right') justifyProp = 'flex-end';
-        else if (hAlign === 'Justified') justifyProp = 'space-between';
+        if (hAlign === 'Center') {justifyProp = 'center';}
+        else if (hAlign === 'Right') {justifyProp = 'flex-end';}
+        else if (hAlign === 'Justified') {justifyProp = 'space-between';}
     }
 
     const vAlign = source.verticalAlignment || style.verticalAlignment;
     let alignProp = 'center';
     if (vAlign) {
-        if (vAlign === 'Top') alignProp = 'flex-start';
-        else if (vAlign === 'Bottom') alignProp = 'flex-end';
-        else if (vAlign === 'Middle' || vAlign === 'Center') alignProp = 'center';
+        if (vAlign === 'Top') {alignProp = 'flex-start';}
+        else if (vAlign === 'Bottom') {alignProp = 'flex-end';}
+        else if (vAlign === 'Middle' || vAlign === 'Center') {alignProp = 'center';}
     }
 
     const rotation = source.rotation || style.rotation;
@@ -329,11 +329,11 @@ export function renderElement(el: LayoutElement): string {
 }
 
 function mapLineStyle(style?: string): string {
-    if (!style) return 'solid';
+    if (!style) {return 'solid';}
     const s = style.toLowerCase();
-    if (s === 'dashed') return 'dashed';
-    if (s === 'dotted') return 'dotted';
-    if (s === 'double') return 'double';
+    if (s === 'dashed') {return 'dashed';}
+    if (s === 'dotted') {return 'dotted';}
+    if (s === 'double') {return 'double';}
     return 'solid';
 }
 
@@ -342,7 +342,7 @@ function stripTags(text: string): string {
 }
 
 function renderFormattedMarkup(text: string, markupType?: string): string {
-    if (!text) return '';
+    if (!text) {return '';}
 
     let decoded = text;
     if (decoded.includes('&amp;') || decoded.includes('&lt;') || decoded.includes('&gt;') || decoded.includes('&quot;')) {
@@ -367,25 +367,25 @@ function parseStyledXmlToHtml(input: string): string {
     output = output.replace(/<style\s+([^>]*)>([\s\S]*?)<\/style>/gi, (_, attrs, inner) => {
         const styleRules: string[] = [];
         const isBoldMatch = attrs.match(/isBold=["']true["']/i);
-        if (isBoldMatch) styleRules.push('font-weight: bold');
+        if (isBoldMatch) {styleRules.push('font-weight: bold');}
 
         const isItalicMatch = attrs.match(/isItalic=["']true["']/i);
-        if (isItalicMatch) styleRules.push('font-style: italic');
+        if (isItalicMatch) {styleRules.push('font-style: italic');}
 
         const isUnderlineMatch = attrs.match(/isUnderline=["']true["']/i);
-        if (isUnderlineMatch) styleRules.push('text-decoration: underline');
+        if (isUnderlineMatch) {styleRules.push('text-decoration: underline');}
 
         const forecolorMatch = attrs.match(/forecolor=["']([^"']+)["']/i);
-        if (forecolorMatch) styleRules.push(`color: ${forecolorMatch[1]}`);
+        if (forecolorMatch) {styleRules.push(`color: ${forecolorMatch[1]}`);}
 
         const backcolorMatch = attrs.match(/backcolor=["']([^"']+)["']/i);
-        if (backcolorMatch) styleRules.push(`background-color: ${backcolorMatch[1]}`);
+        if (backcolorMatch) {styleRules.push(`background-color: ${backcolorMatch[1]}`);}
 
         const sizeMatch = attrs.match(/size=["']([^"']+)["']/i);
-        if (sizeMatch) styleRules.push(`font-size: ${sizeMatch[1]}px`);
+        if (sizeMatch) {styleRules.push(`font-size: ${sizeMatch[1]}px`);}
 
         const fontNameMatch = attrs.match(/(?:fontName|pdfFontName)=["']([^"']+)["']/i);
-        if (fontNameMatch) styleRules.push(`font-family: ${fontNameMatch[1]}, sans-serif`);
+        if (fontNameMatch) {styleRules.push(`font-family: ${fontNameMatch[1]}, sans-serif`);}
 
         const safeInner = escapeHtml(inner);
         return `<span style="${styleRules.join('; ')}">${safeInner}</span>`;

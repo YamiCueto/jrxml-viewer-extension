@@ -1,285 +1,151 @@
 # JRXML Viewer & Editor
 
-*[🇪🇸 Leer en Español](./README.es.md)*
+* [🇪🇸 Leer en Español](./README.es.md)
 
-A professional Visual Studio Code extension for viewing and editing JasperReports JRXML files with interactive real-time visual preview.
+A professional Visual Studio Code extension for viewing, inspecting, and editing JasperReports JRXML files with real-time visual layout, live dataset expressions, style resolution, and real SVG chart rendering.
 
 **Created by Yamid Cueto for the Java and JasperReports community**
 
-![JRXML Viewer](https://img.shields.io/badge/version-0.1.9-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
-![VS Code](https://img.shields.io/badge/VS%20Code-1.85%2B-blue.svg)
+[![Version](https://img.shields.io/visual-studio-marketplace/v/YamidCuetoMazo.jrxml-viewer?style=flat-square&color=blue)](https://marketplace.visualstudio.com/items?itemName=YamidCuetoMazo.jrxml-viewer)
+[![Installs](https://img.shields.io/visual-studio-marketplace/i/YamidCuetoMazo.jrxml-viewer?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=YamidCuetoMazo.jrxml-viewer)
+[![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)](./LICENSE)
+[![VS Code](https://img.shields.io/badge/VS%20Code-1.85%2B-blue.svg?style=flat-square)](https://code.visualstudio.com/)
+
+---
 
 ## 🎯 Features
 
-### Visual Editor & Preview
-- **Interactive visual preview**: Visualize the complete structure of your JRXML reports directly in VS Code
-- **Clickable elements**: Click on any element to see its detailed properties
-- **Properties panel**: Inspect and analyze each element with complete information
-- **Informative tooltips**: Detailed information when hovering over elements
-- **Export to HTML**: Export your reports to standalone HTML files
-- **Interactive zoom & pan**: Control zoom with buttons, keyboard, or mouse wheel. Pan by dragging
-- **Source code view**: Switch between visual editor and XML source with one click
+### 📐 Multi-Layer Layout Engine & Visual Canvas
+- **Exact Page Geometry**: Renders report pages with authentic dimensions (`595 × 842 px` standard A4 / Letter) and margin constraints.
+- **Layered Architecture**: Independent 4-layer composition (`BACKGROUND`, `CONTENT`, `FOOTER`, `OVERLAY`). The background layer renders cleanly behind content without distorting vertical band flow.
+- **Anchored Page Footers**: Automatically anchors `pageFooter` to the bottom margin ($y = 794\text{px}$) regardless of content height.
+- **Isolated NoData States**: Dedicated `noData` alternate state rendering without layout collision.
+- **Nested Frames**: Full recursive geometry calculation for elements inside frames at any nesting depth.
 
-### JRXML Explorer Sidebar
-- **JRXML Files Panel**: Browse all .jrxml files in your workspace with folder structure
-- **Properties Panel**: Real-time document properties including:
-  - Report dimensions and margins
-  - Page size and orientation
-  - Parameters, fields, and variables count
-  - Band information and statistics
-- **Elements Navigator**: Hierarchical tree view of all report elements organized by band
-  - Quick navigation through report structure
-  - Position and size information for each element
-  - Visual icons for different element types
+### 📊 Real SVG Charts & Graphics
+- **Dynamic Dataset Evaluation**: Charts dynamically resolve categories, series, and values from the `PreviewDataset` using safe JasperReports expressions.
+- **Bar Charts (`barChart`)**: Scalable SVG bar charts with categorical X-axis, numeric Y-scale, grid lines, compact value labels, and series legends.
+- **Pie Charts (`pieChart`)**: Trigonometric SVG circular arcs with percentage labels, slice tooltips, and side legend.
+- **Line Charts (`lineChart`)**: Time-series and category line charts with smooth connecting paths, gradient fills, point markers, and tooltips.
 
-### Advanced Navigation
-- **Syntax highlighting**: Enhanced syntax highlighting for JRXML files
-- **Band visualization**: Easily identify header, detail, footer, and other report bands
-- **Visual elements**: Display textFields, staticTexts, images, lines, rectangles, subreports, and charts
-- **Workspace integration**: Dedicated activity bar icon for quick access
-- **Full support**: Compatible with all major JasperReports elements
+### 💡 Safe Expression Evaluation & Preview Data
+- **Lexical Expression Engine**: Safe evaluation for `$P{Param}`, `$F{Field}`, `$V{Var}`, string concatenations, and ternary conditionals (`cond ? a : b`).
+- **Pattern Formatting**: Format numbers (`$ #,##0.00`) and dates (`yyyy-MM-dd`) cleanly.
+- **Synthetic Preview Dataset**: Built-in sample data with automatic report and group scope variable aggregations (`Sum`, `Count`, `Average`).
+- **Zero Arbitrary Code Execution**: Pure lexical parser with 0 use of `eval()`, `new Function()`, or shell commands.
+
+### 🎨 Style Inheritance & Visual Fidelity
+- **Cascading Style System**: Full support for `<style>` hierarchies, `parentStyle` inheritance, and cyclic dependency protection.
+- **Per-Side Box & Pen Rendering**: Renders `topPen`, `bottomPen`, `leftPen`, `rightPen` with custom line widths and styles (`Solid`, `Dashed`, `Dotted`, `Double`).
+- **Biaxial Text Alignment**: Precision flexbox alignment matching JasperReports horizontal (`Left`, `Center`, `Right`, `Justified`) and vertical (`Top`, `Middle`, `Bottom`) alignment.
+- **JasperReports Styled Markup**: Automatically parses and converts `<style isBold="true"...>`, `<b>`, `<i>`, `<u>`, `<font>` into safe HTML formatting.
+- **Text Rotation**: Native support for rotated text (`rotation="Left"`, `Right`, `UpsideDown`).
+
+### ✏️ Bidirectional Editing & Safe XML Persistence
+- **AST-Based Serialization**: Safely edits elements via AST transformations instead of fragile regex replacements.
+- **Deterministic Element IDs**: Unique structural `ElementId` addressing prevents coordinate collisions.
+- **Preserved JRXML Integrity**: Comments, CDATA blocks, expressions, and formatting remain intact upon saving.
+- **Properties Inspector**: Real-time property editing (coordinates, dimensions, text, expressions, colors, fonts, borders).
+
+### 🗂️ JRXML Explorer Sidebar
+- **JRXML Files Navigator**: Browse all `.jrxml` files in the workspace with folder structure.
+- **Document Properties**: Real-time inspection of report metadata, dimensions, margins, and variable counts.
+- **Element Hierarchy Tree**: Expand bands and frames to inspect and highlight every visual element.
+
+### ⚡ Navigation & Controls
+- **Interactive Zoom & Panning**: Mouse wheel zoom (`Ctrl/Cmd + Wheel`), button controls, and click-and-drag panning.
+- **View Switching**: Instant one-click toggle between visual canvas and XML source code editor.
+- **Standalone HTML Export**: Export reports to self-contained HTML files with embedded SVG graphics and resolved styles.
+
+---
 
 ## 📦 Installation
 
-### From VS Code Marketplace (coming soon)
-1. Open VS Code
-2. Go to Extensions view (Ctrl+Shift+X)
-3. Search for "JRXML Viewer"
-4. Click "Install"
+### From VS Code Marketplace
+1. Open Visual Studio Code.
+2. Open the Extensions view (`Ctrl+Shift+X` / `Cmd+Shift+X`).
+3. Search for `JRXML Viewer & Editor` (or `YamidCuetoMazo.jrxml-viewer`).
+4. Click **Install**.
 
-### Manual installation for development
-1. Clone this repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Compile the project:
-   ```bash
-   npm run compile
-   ```
-4. Press F5 to open a new VS Code window with the extension loaded
+### Command Palette Installation
+Press `Ctrl+P` (or `Cmd+P`) and paste:
+```bash
+ext install YamidCuetoMazo.jrxml-viewer
+```
+
+---
 
 ## 🚀 Usage
 
 ### Opening JRXML Files
-1. Open any `.jrxml` file in VS Code
-2. The extension will automatically open the visual viewer
-3. **Switch views**:
-   - Click the **`</>`** button in the editor toolbar to view XML source
-   - Right-click any `.jrxml` file in Explorer → "Open JRXML Source"
-   - Use the JRXML Explorer sidebar to browse and open files
+1. Open any `.jrxml` file in VS Code.
+2. The visual viewer opens automatically by default.
+3. **Switch Views**:
+   - Click the **`</>`** button in the editor toolbar to switch to the XML source code.
+   - Right-click any `.jrxml` file in the File Explorer → **"Open JRXML Source"**.
+   - Use the **JRXML Explorer** sidebar to navigate reports.
 
-### JRXML Explorer Sidebar
-1. Click the JRXML icon in the Activity Bar (left sidebar)
-2. **JRXML Files**: Browse all reports in your workspace
-   - Click any file to open in visual editor
-   - Use the refresh button to reload the file list
-3. **Properties**: View document metadata and statistics
-4. **Elements**: Navigate through report structure by band
-   - Expand bands to see contained elements
-   - View position and size information
-
-### Keyboard shortcuts
-
+### Keyboard Shortcuts
 - `Ctrl/Cmd + +`: Zoom in
 - `Ctrl/Cmd + -`: Zoom out
-- `Ctrl/Cmd + 0`: Reset zoom to 100%
-- `Ctrl/Cmd + Wheel`: Zoom with mouse wheel
+- `Ctrl/Cmd + 0`: Reset zoom (100%)
+- `Ctrl/Cmd + Mouse Wheel`: Smooth zoom
 - `Click + Drag`: Pan the canvas
-- `Double-click`: Reset zoom and position
-- `Escape`: Close properties panel/deselect element
+- `Escape`: Deselect element / close properties panel
 
-### Commands
-
-- `JRXML: Open Preview`: Opens the preview of the current JRXML file
-- `JRXML: Open JRXML Source`: Opens the XML source code editor
-- `JRXML: Refresh JRXML Files`: Refresh the file list in sidebar
-
-### Settings
-
+### Extension Settings
 | Setting | Description | Default |
-|---------|-------------|---------|
-| `jrxml-viewer.defaultView` | Choose which view to open by default when opening JRXML files. Options: `preview` (visual editor) or `source` (XML code) | `preview` |
+| :--- | :--- | :--- |
+| `jrxml-viewer.defaultView` | Choose default view when opening `.jrxml` files (`preview` for visual editor or `source` for XML code). | `preview` |
 
-To change the default view:
-1. Open VS Code Settings (Ctrl+,)
-2. Search for "JRXML Viewer"
-3. Select your preferred default view
+---
 
-### Interface buttons
+## 📝 Supported JasperReports Elements
 
-- **📄 Export HTML**: Export the report to an HTML file
-- **🔧 Properties**: Open/close the properties panel
-- **+/-**: Zoom controls
-- **</>**: Switch to XML source view
+| Category | Elements / Bands |
+| :--- | :--- |
+| **Bands** | `title`, `pageHeader`, `columnHeader`, `groupHeader`, `detail`, `groupFooter`, `columnFooter`, `pageFooter`, `summary`, `background`, `noData` |
+| **Elements** | `staticText`, `textField`, `image`, `line`, `rectangle`, `ellipse`, `frame`, `elementGroup`, `subreport`, `barChart`, `pieChart`, `lineChart` |
+| **Layout & Styles** | `box` (all sides and individual pens), `style` inheritance, `parentStyle`, `fontName`, `fontSize`, `bold`, `italic`, `underline`, `strikeThrough`, `forecolor`, `backcolor`, `mode` (Opaque/Transparent) |
+| **Expressions** | `$P{...}`, `$F{...}`, `$V{...}`, string concatenations, ternary conditionals, date/numeric pattern formatting |
 
-## 🔧 Development
-
-### Prerequisites
-- Node.js 20.x or higher
-- npm 9.x or higher
-- Visual Studio Code 1.85.0 or higher
-
-### Project structure
-
-```
-jrxml-viewer-extension/
-├── src/
-│   ├── extension.ts              # Extension entry point
-│   ├── jrxmlEditorProvider.ts    # Custom editor provider
-│   ├── jrxmlParser.ts            # JRXML file parser
-│   ├── jrxmlFilesProvider.ts     # File explorer provider
-│   ├── jrxmlPropertiesProvider.ts # Properties panel provider
-│   └── jrxmlElementsProvider.ts  # Elements navigator provider
-├── media/
-│   ├── preview.css               # Viewer styles
-│   ├── preview.js                # Viewer logic
-│   └── jrxml-icon.svg            # Extension icon
-├── .vscode/
-│   ├── launch.json               # Debug configuration
-│   └── tasks.json                # Build tasks
-├── package.json                  # Extension manifest
-└── tsconfig.json                 # TypeScript configuration
-```
-
-### Available scripts
-
-```bash
-npm run compile      # Compile TypeScript
-npm run watch        # Compile in watch mode
-npm run lint         # Run linter
-npm run package      # Package extension for publishing
-```
-
-### Debugging
-
-1. Open the project in VS Code
-2. Press F5 or select "Run Extension" in the Debug panel
-3. A new VS Code window will open with the extension loaded
-4. Open a `.jrxml` file to test
-
-## 📝 Supported elements
-
-### Bands
-- ✅ Title
-- ✅ Page Header
-- ✅ Column Header
-- ✅ Group Header
-- ✅ Detail
-- ✅ Group Footer
-- ✅ Column Footer
-- ✅ Page Footer
-- ✅ Summary
-- ✅ Background
-- ✅ Last Page Footer
-- ✅ No Data
-
-### Elements
-- ✅ Static Text
-- ✅ Text Field
-- ✅ Image
-- ✅ Line
-- ✅ Rectangle
-- ✅ Subreport
-- ✅ Chart (basic visualization)
-- ⏳ Barcode (coming soon)
-
-### Properties
-- ✅ Position (x, y, width, height)
-- ✅ Text alignment
-- ✅ Font properties
-- ✅ Colors (foreground, background)
-- ✅ Borders
-- ✅ Patterns
-- ✅ Expressions
+---
 
 ## 🛣️ Roadmap
 
 ### Completed ✅
-- [x] Visual preview with clickable elements
-- [x] Interactive zoom and pan controls
-- [x] JRXML Explorer sidebar with three panels
-- [x] Properties and Elements navigation
-- [x] Export to HTML functionality
-- [x] Switch between visual and source view
-- [x] Mouse wheel zoom and drag navigation
-- [x] Workspace file browser
-- [x] Real-time document statistics
+- [x] Strongly-typed JRXML Document Model (AST)
+- [x] Multi-layer Layout Engine & layer separation (`BACKGROUND`, `CONTENT`, `FOOTER`)
+- [x] Pure Layout Renderer with transparent band canvases
+- [x] Deterministic structural `ElementId` addressing
+- [x] AST-driven safe XML persistence & properties editing
+- [x] Safe expression evaluation ($P{}, $F{}, $V{}) & variable aggregations
+- [x] Style cascade, inheritance & cycle detection
+- [x] Real vector SVG charts (`barChart`, `pieChart`, `lineChart`)
+- [x] JasperReports styled markup conversion (`<style>`, `<b>`, `<i>`, `<u>`)
+- [x] 114 automated tests across 8 verification suites (100% passing)
 
 ### In Progress 🚧
-- [ ] Interactive visual editor (drag & drop)
-- [ ] Scroll to element in source code
-- [ ] Element selection synchronization
+- [ ] Visual authoring palette (drag & drop new elements onto canvas)
+- [ ] Interactive visual element resizing handles
+- [ ] End-to-End Playwright visual regression suite
 
 ### Planned 📋
-- [ ] Full support for complex charts and graphs
-- [ ] Export to PDF from VS Code
-- [ ] Real-time syntax validation
-- [ ] Snippets for common elements
-- [ ] Intelligent autocompletion
-- [ ] Integration with JasperReports Server
-- [ ] Preview with sample data
+- [ ] PDF export directly from VS Code
+- [ ] Real-time JasperReports schema validation
+- [ ] Common JRXML snippet templates & autocompletion
+- [ ] Live JasperReports Server connector
 
-## 🤝 Contributing
-
-Contributions are welcome! If you want to contribute:
-
-1. Fork the project
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+---
 
 ## 📄 License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+This project is licensed under the **MIT License**. See the [`LICENSE`](./LICENSE) file for details.
+
+---
 
 ## 👨‍💻 Author
 
 **Yamid Cueto**
 - GitHub: [@YamiCueto](https://github.com/YamiCueto)
-- Extension created for the Java and JasperReports community
-- Contributions and suggestions are welcome
-
-## 🙏 Acknowledgments
-
-- To the JasperReports community for creating such a powerful tool
-- To all Java developers who work with reports every day
-- To the VS Code community for providing an extensible platform
-
-## 📧 Contact & Support
-
-If you have questions, suggestions, or find any bugs:
-- Open an issue on the [GitHub repository](https://github.com/YamiCueto/jrxml-viewer-extension/issues)
-- Leave a review on the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=yamid.jrxml-viewer)
-
-## 📊 Statistics
-
-- **Current version**: 0.1.9
-- **Release date**: January 18, 2026
-- **Compatible with**: VS Code 1.85.0+
-- **License**: MIT
-- **Language**: TypeScript
-- **Dependencies**: fast-xml-parser
-
-## 📝 Changelog
-
-See [CHANGELOG.md](./CHANGELOG.md) for detailed version history.
-
-### Latest Updates (v0.1.9)
-- ✨ Added interactive editing from preview (drag & drop + properties panel edits)
-- 🔧 Migrated preview script to TypeScript and improved parser & save reliability
- 
-### Previous (v0.1.8)
-- ✨ Added configurable default view setting
-- 🔧 Choose between visual preview or source code as default
-- ⚙️ New setting: `jrxml-viewer.defaultView` (preview/source)
-
----
-
-**Made with ❤️ by Yamid Cueto for the Java community!**
-
-*If you find this extension useful, consider leaving a ⭐ on GitHub and a review on the Marketplace*
-
-*Si esta extensión te resulta útil, considera dejar una ⭐ en GitHub y una reseña en el Marketplace*
+- Marketplace: [YamidCuetoMazo](https://marketplace.visualstudio.com/publishers/YamidCuetoMazo)

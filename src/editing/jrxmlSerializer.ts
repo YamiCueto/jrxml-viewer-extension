@@ -26,7 +26,7 @@ export function serializeJrxmlDocument(doc: JrxmlDocument): string {
         `name="${escapeXmlAttr(report.name)}"`
     ];
 
-    if (report.language) reportAttrs.push(`language="${escapeXmlAttr(report.language)}"`);
+    if (report.language) {reportAttrs.push(`language="${escapeXmlAttr(report.language)}"`);}
     reportAttrs.push(`pageWidth="${report.pageWidth}"`);
     reportAttrs.push(`pageHeight="${report.pageHeight}"`);
     reportAttrs.push(`orientation="${report.orientation}"`);
@@ -36,8 +36,8 @@ export function serializeJrxmlDocument(doc: JrxmlDocument): string {
     reportAttrs.push(`rightMargin="${report.rightMargin}"`);
     reportAttrs.push(`topMargin="${report.topMargin}"`);
     reportAttrs.push(`bottomMargin="${report.bottomMargin}"`);
-    if (report.uuid) reportAttrs.push(`uuid="${escapeXmlAttr(report.uuid)}"`);
-    if (report.whenNoDataType) reportAttrs.push(`whenNoDataType="${escapeXmlAttr(report.whenNoDataType)}"`);
+    if (report.uuid) {reportAttrs.push(`uuid="${escapeXmlAttr(report.uuid)}"`);}
+    if (report.whenNoDataType) {reportAttrs.push(`whenNoDataType="${escapeXmlAttr(report.whenNoDataType)}"`);}
 
     lines.push(`<jasperReport ${reportAttrs.join(' ')}>`);
 
@@ -113,25 +113,25 @@ function escapeXmlAttr(str: string): string {
 
 function serializePen(pen: JrxmlPen, tagName: string, indent: string): string {
     const attrs: string[] = [];
-    if (pen.lineWidth !== undefined) attrs.push(`lineWidth="${pen.lineWidth}"`);
-    if (pen.lineColor) attrs.push(`lineColor="${escapeXmlAttr(pen.lineColor)}"`);
-    if (pen.lineStyle) attrs.push(`lineStyle="${escapeXmlAttr(pen.lineStyle)}"`);
+    if (pen.lineWidth !== undefined) {attrs.push(`lineWidth="${pen.lineWidth}"`);}
+    if (pen.lineColor) {attrs.push(`lineColor="${escapeXmlAttr(pen.lineColor)}"`);}
+    if (pen.lineStyle) {attrs.push(`lineStyle="${escapeXmlAttr(pen.lineStyle)}"`);}
     return `${indent}<${tagName} ${attrs.join(' ')}/>`;
 }
 
 function serializeBox(box: JrxmlBox, indent: string): string {
     const boxAttrs: string[] = [];
-    if (box.topPadding !== undefined) boxAttrs.push(`topPadding="${box.topPadding}"`);
-    if (box.leftPadding !== undefined) boxAttrs.push(`leftPadding="${box.leftPadding}"`);
-    if (box.bottomPadding !== undefined) boxAttrs.push(`bottomPadding="${box.bottomPadding}"`);
-    if (box.rightPadding !== undefined) boxAttrs.push(`rightPadding="${box.rightPadding}"`);
+    if (box.topPadding !== undefined) {boxAttrs.push(`topPadding="${box.topPadding}"`);}
+    if (box.leftPadding !== undefined) {boxAttrs.push(`leftPadding="${box.leftPadding}"`);}
+    if (box.bottomPadding !== undefined) {boxAttrs.push(`bottomPadding="${box.bottomPadding}"`);}
+    if (box.rightPadding !== undefined) {boxAttrs.push(`rightPadding="${box.rightPadding}"`);}
 
     const children: string[] = [];
-    if (box.pen) children.push(serializePen(box.pen, 'pen', indent + '    '));
-    if (box.topPen) children.push(serializePen(box.topPen, 'topPen', indent + '    '));
-    if (box.leftPen) children.push(serializePen(box.leftPen, 'leftPen', indent + '    '));
-    if (box.bottomPen) children.push(serializePen(box.bottomPen, 'bottomPen', indent + '    '));
-    if (box.rightPen) children.push(serializePen(box.rightPen, 'rightPen', indent + '    '));
+    if (box.pen) {children.push(serializePen(box.pen, 'pen', indent + '    '));}
+    if (box.topPen) {children.push(serializePen(box.topPen, 'topPen', indent + '    '));}
+    if (box.leftPen) {children.push(serializePen(box.leftPen, 'leftPen', indent + '    '));}
+    if (box.bottomPen) {children.push(serializePen(box.bottomPen, 'bottomPen', indent + '    '));}
+    if (box.rightPen) {children.push(serializePen(box.rightPen, 'rightPen', indent + '    '));}
 
     const attrStr = boxAttrs.length > 0 ? ` ${boxAttrs.join(' ')}` : '';
     if (children.length === 0) {
@@ -142,20 +142,20 @@ function serializeBox(box: JrxmlBox, indent: string): string {
 
 function serializeStyle(style: JrxmlStyle, indent: string): string {
     const attrs: string[] = [`name="${escapeXmlAttr(style.name)}"`];
-    if (style.isDefault) attrs.push('isDefault="true"');
-    if (style.parentStyle) attrs.push(`style="${escapeXmlAttr(style.parentStyle)}"`);
-    if (style.fontName) attrs.push(`fontName="${escapeXmlAttr(style.fontName)}"`);
-    if (style.fontSize !== undefined) attrs.push(`fontSize="${style.fontSize}"`);
-    if (style.isBold) attrs.push('isBold="true"');
-    if (style.isItalic) attrs.push('isItalic="true"');
-    if (style.isUnderline) attrs.push('isUnderline="true"');
-    if (style.isStrikeThrough) attrs.push('isStrikeThrough="true"');
-    if (style.forecolor) attrs.push(`forecolor="${escapeXmlAttr(style.forecolor)}"`);
-    if (style.backcolor) attrs.push(`backcolor="${escapeXmlAttr(style.backcolor)}"`);
-    if (style.mode) attrs.push(`mode="${escapeXmlAttr(style.mode)}"`);
-    if (style.horizontalAlignment) attrs.push(`hTextAlign="${escapeXmlAttr(style.horizontalAlignment)}"`);
-    if (style.verticalAlignment) attrs.push(`vTextAlign="${escapeXmlAttr(style.verticalAlignment)}"`);
-    if (style.pattern) attrs.push(`pattern="${escapeXmlAttr(style.pattern)}"`);
+    if (style.isDefault) {attrs.push('isDefault="true"');}
+    if (style.parentStyle) {attrs.push(`style="${escapeXmlAttr(style.parentStyle)}"`);}
+    if (style.fontName) {attrs.push(`fontName="${escapeXmlAttr(style.fontName)}"`);}
+    if (style.fontSize !== undefined) {attrs.push(`fontSize="${style.fontSize}"`);}
+    if (style.isBold) {attrs.push('isBold="true"');}
+    if (style.isItalic) {attrs.push('isItalic="true"');}
+    if (style.isUnderline) {attrs.push('isUnderline="true"');}
+    if (style.isStrikeThrough) {attrs.push('isStrikeThrough="true"');}
+    if (style.forecolor) {attrs.push(`forecolor="${escapeXmlAttr(style.forecolor)}"`);}
+    if (style.backcolor) {attrs.push(`backcolor="${escapeXmlAttr(style.backcolor)}"`);}
+    if (style.mode) {attrs.push(`mode="${escapeXmlAttr(style.mode)}"`);}
+    if (style.horizontalAlignment) {attrs.push(`hTextAlign="${escapeXmlAttr(style.horizontalAlignment)}"`);}
+    if (style.verticalAlignment) {attrs.push(`vTextAlign="${escapeXmlAttr(style.verticalAlignment)}"`);}
+    if (style.pattern) {attrs.push(`pattern="${escapeXmlAttr(style.pattern)}"`);}
 
     if (style.box) {
         return `${indent}<style ${attrs.join(' ')}>\n${serializeBox(style.box, indent + '    ')}\n${indent}</style>`;
@@ -186,8 +186,8 @@ function serializeVariable(v: JrxmlVariable, indent: string): string {
     if (v.calculation && v.calculation !== 'Nothing') {
         attrs.push(`calculation="${escapeXmlAttr(v.calculation)}"`);
     }
-    if (v.resetType) attrs.push(`resetType="${escapeXmlAttr(v.resetType)}"`);
-    if (v.resetGroup) attrs.push(`resetGroup="${escapeXmlAttr(v.resetGroup)}"`);
+    if (v.resetType) {attrs.push(`resetType="${escapeXmlAttr(v.resetType)}"`);}
+    if (v.resetGroup) {attrs.push(`resetGroup="${escapeXmlAttr(v.resetGroup)}"`);}
 
     if (v.expression) {
         return `${indent}<variable ${attrs.join(' ')}>\n${indent}    <variableExpression><![CDATA[${v.expression.raw}]]></variableExpression>\n${indent}</variable>`;
@@ -197,8 +197,8 @@ function serializeVariable(v: JrxmlVariable, indent: string): string {
 
 function serializeGroup(g: JrxmlGroup, indent: string): string {
     const attrs: string[] = [`name="${escapeXmlAttr(g.name)}"`];
-    if (g.isStartNewPage) attrs.push('isStartNewPage="true"');
-    if (g.isReprintHeaderOnEachPage) attrs.push('isReprintHeaderOnEachPage="true"');
+    if (g.isStartNewPage) {attrs.push('isStartNewPage="true"');}
+    if (g.isReprintHeaderOnEachPage) {attrs.push('isReprintHeaderOnEachPage="true"');}
 
     const lines: string[] = [`${indent}<group ${attrs.join(' ')}>`];
     lines.push(`${indent}    <groupExpression><![CDATA[${g.expression.raw}]]></groupExpression>`);
@@ -231,18 +231,18 @@ function serializeReportElement(el: JrxmlElement, indent: string): string {
     const geom = el.geometry;
     const attrs: string[] = [];
 
-    if (el.styleName) attrs.push(`style="${escapeXmlAttr(el.styleName)}"`);
+    if (el.styleName) {attrs.push(`style="${escapeXmlAttr(el.styleName)}"`);}
     attrs.push(`x="${geom.x}"`);
     attrs.push(`y="${geom.y}"`);
     attrs.push(`width="${geom.width}"`);
     attrs.push(`height="${geom.height}"`);
 
-    if (el.uuid) attrs.push(`uuid="${escapeXmlAttr(el.uuid)}"`);
-    if (el.forecolor) attrs.push(`forecolor="${escapeXmlAttr(el.forecolor)}"`);
-    if (el.backcolor) attrs.push(`backcolor="${escapeXmlAttr(el.backcolor)}"`);
-    if (el.mode) attrs.push(`mode="${escapeXmlAttr(el.mode)}"`);
-    if (geom.positionType) attrs.push(`positionType="${escapeXmlAttr(geom.positionType)}"`);
-    if (geom.stretchType) attrs.push(`stretchType="${escapeXmlAttr(geom.stretchType)}"`);
+    if (el.uuid) {attrs.push(`uuid="${escapeXmlAttr(el.uuid)}"`);}
+    if (el.forecolor) {attrs.push(`forecolor="${escapeXmlAttr(el.forecolor)}"`);}
+    if (el.backcolor) {attrs.push(`backcolor="${escapeXmlAttr(el.backcolor)}"`);}
+    if (el.mode) {attrs.push(`mode="${escapeXmlAttr(el.mode)}"`);}
+    if (geom.positionType) {attrs.push(`positionType="${escapeXmlAttr(geom.positionType)}"`);}
+    if (geom.stretchType) {attrs.push(`stretchType="${escapeXmlAttr(geom.stretchType)}"`);}
 
     if (el.printWhenExpression) {
         return `${indent}<reportElement ${attrs.join(' ')}>\n${indent}    <printWhenExpression><![CDATA[${el.printWhenExpression.raw}]]></printWhenExpression>\n${indent}</reportElement>`;
@@ -252,18 +252,18 @@ function serializeReportElement(el: JrxmlElement, indent: string): string {
 
 function serializeTextElement(el: JrxmlElement, indent: string): string {
     const teAttrs: string[] = [];
-    if (el.horizontalAlignment) teAttrs.push(`textAlignment="${escapeXmlAttr(el.horizontalAlignment)}"`);
-    if (el.verticalAlignment) teAttrs.push(`verticalAlignment="${escapeXmlAttr(el.verticalAlignment)}"`);
-    if (el.rotation) teAttrs.push(`rotation="${escapeXmlAttr(el.rotation)}"`);
-    if (el.markup) teAttrs.push(`markup="${escapeXmlAttr(el.markup)}"`);
+    if (el.horizontalAlignment) {teAttrs.push(`textAlignment="${escapeXmlAttr(el.horizontalAlignment)}"`);}
+    if (el.verticalAlignment) {teAttrs.push(`verticalAlignment="${escapeXmlAttr(el.verticalAlignment)}"`);}
+    if (el.rotation) {teAttrs.push(`rotation="${escapeXmlAttr(el.rotation)}"`);}
+    if (el.markup) {teAttrs.push(`markup="${escapeXmlAttr(el.markup)}"`);}
 
     const fontAttrs: string[] = [];
-    if (el.fontName) fontAttrs.push(`fontName="${escapeXmlAttr(el.fontName)}"`);
-    if (el.fontSize !== undefined) fontAttrs.push(`size="${el.fontSize}"`);
-    if (el.isBold) fontAttrs.push('isBold="true"');
-    if (el.isItalic) fontAttrs.push('isItalic="true"');
-    if (el.isUnderline) fontAttrs.push('isUnderline="true"');
-    if (el.isStrikeThrough) fontAttrs.push('isStrikeThrough="true"');
+    if (el.fontName) {fontAttrs.push(`fontName="${escapeXmlAttr(el.fontName)}"`);}
+    if (el.fontSize !== undefined) {fontAttrs.push(`size="${el.fontSize}"`);}
+    if (el.isBold) {fontAttrs.push('isBold="true"');}
+    if (el.isItalic) {fontAttrs.push('isItalic="true"');}
+    if (el.isUnderline) {fontAttrs.push('isUnderline="true"');}
+    if (el.isStrikeThrough) {fontAttrs.push('isStrikeThrough="true"');}
 
     const teAttrStr = teAttrs.length > 0 ? ` ${teAttrs.join(' ')}` : '';
     if (fontAttrs.length === 0) {
@@ -277,7 +277,7 @@ export function serializeElement(el: JrxmlElement, indent: string): string {
         case 'staticText': {
             const lines: string[] = [`${indent}<staticText>`];
             lines.push(serializeReportElement(el, indent + '    '));
-            if (el.box) lines.push(serializeBox(el.box, indent + '    '));
+            if (el.box) {lines.push(serializeBox(el.box, indent + '    '));}
             lines.push(serializeTextElement(el, indent + '    '));
             lines.push(`${indent}    <text><![CDATA[${el.text || ''}]]></text>`);
             lines.push(`${indent}</staticText>`);
@@ -286,16 +286,16 @@ export function serializeElement(el: JrxmlElement, indent: string): string {
 
         case 'textField': {
             const tfAttrs: string[] = [];
-            if (el.pattern) tfAttrs.push(`pattern="${escapeXmlAttr(el.pattern)}"`);
-            if (el.isBlankWhenNull) tfAttrs.push('isBlankWhenNull="true"');
-            if (el.evaluationTime) tfAttrs.push(`evaluationTime="${escapeXmlAttr(el.evaluationTime)}"`);
-            if (el.evaluationGroup) tfAttrs.push(`evaluationGroup="${escapeXmlAttr(el.evaluationGroup)}"`);
-            if (el.isStretchWithOverflow) tfAttrs.push('isStretchWithOverflow="true"');
+            if (el.pattern) {tfAttrs.push(`pattern="${escapeXmlAttr(el.pattern)}"`);}
+            if (el.isBlankWhenNull) {tfAttrs.push('isBlankWhenNull="true"');}
+            if (el.evaluationTime) {tfAttrs.push(`evaluationTime="${escapeXmlAttr(el.evaluationTime)}"`);}
+            if (el.evaluationGroup) {tfAttrs.push(`evaluationGroup="${escapeXmlAttr(el.evaluationGroup)}"`);}
+            if (el.isStretchWithOverflow) {tfAttrs.push('isStretchWithOverflow="true"');}
 
             const tfAttrStr = tfAttrs.length > 0 ? ` ${tfAttrs.join(' ')}` : '';
             const lines: string[] = [`${indent}<textField${tfAttrStr}>`];
             lines.push(serializeReportElement(el, indent + '    '));
-            if (el.box) lines.push(serializeBox(el.box, indent + '    '));
+            if (el.box) {lines.push(serializeBox(el.box, indent + '    '));}
             lines.push(serializeTextElement(el, indent + '    '));
             lines.push(`${indent}    <textFieldExpression><![CDATA[${el.expression?.raw || ''}]]></textFieldExpression>`);
             lines.push(`${indent}</textField>`);
@@ -304,7 +304,7 @@ export function serializeElement(el: JrxmlElement, indent: string): string {
 
         case 'rectangle': {
             const rectAttrs: string[] = [];
-            if (el.radius !== undefined) rectAttrs.push(`radius="${el.radius}"`);
+            if (el.radius !== undefined) {rectAttrs.push(`radius="${el.radius}"`);}
             const rectAttrStr = rectAttrs.length > 0 ? ` ${rectAttrs.join(' ')}` : '';
 
             const lines: string[] = [`${indent}<rectangle${rectAttrStr}>`];
@@ -312,7 +312,7 @@ export function serializeElement(el: JrxmlElement, indent: string): string {
             if (el.pen) {
                 lines.push(`${indent}    <graphicElement>\n${serializePen(el.pen, 'pen', indent + '        ')}\n${indent}    </graphicElement>`);
             }
-            if (el.box) lines.push(serializeBox(el.box, indent + '    '));
+            if (el.box) {lines.push(serializeBox(el.box, indent + '    '));}
             lines.push(`${indent}</rectangle>`);
             return lines.join('\n');
         }
@@ -329,7 +329,7 @@ export function serializeElement(el: JrxmlElement, indent: string): string {
 
         case 'line': {
             const lineAttrs: string[] = [];
-            if (el.direction) lineAttrs.push(`direction="${escapeXmlAttr(el.direction)}"`);
+            if (el.direction) {lineAttrs.push(`direction="${escapeXmlAttr(el.direction)}"`);}
             const lineAttrStr = lineAttrs.length > 0 ? ` ${lineAttrs.join(' ')}` : '';
 
             const lines: string[] = [`${indent}<line${lineAttrStr}>`];
@@ -343,12 +343,12 @@ export function serializeElement(el: JrxmlElement, indent: string): string {
 
         case 'image': {
             const imgAttrs: string[] = [];
-            if (el.scaleImage) imgAttrs.push(`scaleImage="${escapeXmlAttr(el.scaleImage)}"`);
+            if (el.scaleImage) {imgAttrs.push(`scaleImage="${escapeXmlAttr(el.scaleImage)}"`);}
             const imgAttrStr = imgAttrs.length > 0 ? ` ${imgAttrs.join(' ')}` : '';
 
             const lines: string[] = [`${indent}<image${imgAttrStr}>`];
             lines.push(serializeReportElement(el, indent + '    '));
-            if (el.box) lines.push(serializeBox(el.box, indent + '    '));
+            if (el.box) {lines.push(serializeBox(el.box, indent + '    '));}
             lines.push(`${indent}    <imageExpression><![CDATA[${el.imageExpression?.raw || ''}]]></imageExpression>`);
             lines.push(`${indent}</image>`);
             return lines.join('\n');
@@ -357,7 +357,7 @@ export function serializeElement(el: JrxmlElement, indent: string): string {
         case 'frame': {
             const lines: string[] = [`${indent}<frame>`];
             lines.push(serializeReportElement(el, indent + '    '));
-            if (el.box) lines.push(serializeBox(el.box, indent + '    '));
+            if (el.box) {lines.push(serializeBox(el.box, indent + '    '));}
             if (el.children) {
                 for (const child of el.children) {
                     lines.push(serializeElement(child, indent + '    '));
@@ -414,8 +414,8 @@ export function serializeElement(el: JrxmlElement, indent: string): string {
             }
             if (el.legend) {
                 const legAttrs: string[] = [];
-                if (el.legend.textColor) legAttrs.push(`textColor="${escapeXmlAttr(el.legend.textColor)}"`);
-                if (el.legend.backgroundColor) legAttrs.push(`backgroundColor="${escapeXmlAttr(el.legend.backgroundColor)}"`);
+                if (el.legend.textColor) {legAttrs.push(`textColor="${escapeXmlAttr(el.legend.textColor)}"`);}
+                if (el.legend.backgroundColor) {legAttrs.push(`backgroundColor="${escapeXmlAttr(el.legend.backgroundColor)}"`);}
                 lines.push(`${indent}        <chartLegend ${legAttrs.join(' ')}/>`);
             }
             lines.push(`${indent}    </chart>`);
@@ -423,19 +423,19 @@ export function serializeElement(el: JrxmlElement, indent: string): string {
                 lines.push(`${indent}    <categoryDataset>`);
                 for (const s of el.categoryDataset.series) {
                     lines.push(`${indent}        <categorySeries>`);
-                    if (s.seriesExpression) lines.push(`${indent}            <seriesExpression><![CDATA[${s.seriesExpression.raw}]]></seriesExpression>`);
-                    if (s.categoryExpression) lines.push(`${indent}            <categoryExpression><![CDATA[${s.categoryExpression.raw}]]></categoryExpression>`);
-                    if (s.valueExpression) lines.push(`${indent}            <valueExpression><![CDATA[${s.valueExpression.raw}]]></valueExpression>`);
-                    if (s.labelExpression) lines.push(`${indent}            <labelExpression><![CDATA[${s.labelExpression.raw}]]></labelExpression>`);
+                    if (s.seriesExpression) {lines.push(`${indent}            <seriesExpression><![CDATA[${s.seriesExpression.raw}]]></seriesExpression>`);}
+                    if (s.categoryExpression) {lines.push(`${indent}            <categoryExpression><![CDATA[${s.categoryExpression.raw}]]></categoryExpression>`);}
+                    if (s.valueExpression) {lines.push(`${indent}            <valueExpression><![CDATA[${s.valueExpression.raw}]]></valueExpression>`);}
+                    if (s.labelExpression) {lines.push(`${indent}            <labelExpression><![CDATA[${s.labelExpression.raw}]]></labelExpression>`);}
                     lines.push(`${indent}        </categorySeries>`);
                 }
                 lines.push(`${indent}    </categoryDataset>`);
             }
             if (el.pieDataset) {
                 lines.push(`${indent}    <pieDataset>`);
-                if (el.pieDataset.keyExpression) lines.push(`${indent}        <keyExpression><![CDATA[${el.pieDataset.keyExpression.raw}]]></keyExpression>`);
-                if (el.pieDataset.valueExpression) lines.push(`${indent}        <valueExpression><![CDATA[${el.pieDataset.valueExpression.raw}]]></valueExpression>`);
-                if (el.pieDataset.labelExpression) lines.push(`${indent}        <labelExpression><![CDATA[${el.pieDataset.labelExpression.raw}]]></labelExpression>`);
+                if (el.pieDataset.keyExpression) {lines.push(`${indent}        <keyExpression><![CDATA[${el.pieDataset.keyExpression.raw}]]></keyExpression>`);}
+                if (el.pieDataset.valueExpression) {lines.push(`${indent}        <valueExpression><![CDATA[${el.pieDataset.valueExpression.raw}]]></valueExpression>`);}
+                if (el.pieDataset.labelExpression) {lines.push(`${indent}        <labelExpression><![CDATA[${el.pieDataset.labelExpression.raw}]]></labelExpression>`);}
                 lines.push(`${indent}    </pieDataset>`);
             }
             lines.push(`${indent}</${tagName}>`);

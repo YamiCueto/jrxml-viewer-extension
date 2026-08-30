@@ -129,20 +129,20 @@ function assignIdsToElements(elements: JrxmlElement[], prefix: string): void {
 
 
 function toArray<T = any>(node: any): T[] {
-    if (node === undefined || node === null) return [];
+    if (node === undefined || node === null) {return [];}
     return Array.isArray(node) ? node : [node];
 }
 
 function extractFirst(node: any): any {
-    if (node === undefined || node === null) return undefined;
+    if (node === undefined || node === null) {return undefined;}
     return Array.isArray(node) ? node[0] : node;
 }
 
 function extractText(node: any): string | undefined {
-    if (node === undefined || node === null) return undefined;
+    if (node === undefined || node === null) {return undefined;}
     const target = Array.isArray(node) ? node[0] : node;
-    if (typeof target === 'string') return target;
-    if (typeof target === 'number' || typeof target === 'boolean') return String(target);
+    if (typeof target === 'string') {return target;}
+    if (typeof target === 'number' || typeof target === 'boolean') {return String(target);}
     if (typeof target === 'object' && target['#text'] !== undefined) {
         return String(target['#text']);
     }
@@ -151,7 +151,7 @@ function extractText(node: any): string | undefined {
 
 function parseExpression(node: any): JrxmlExpression | undefined {
     const raw = extractText(node);
-    if (raw === undefined || raw === null) return undefined;
+    if (raw === undefined || raw === null) {return undefined;}
 
     const trimmed = raw.trim();
     const fieldMatch = trimmed.match(/^\$F\{([^}]+)\}$/);
@@ -187,7 +187,7 @@ function parseProperties(reportNode: any): Record<string, string> {
 
 function parsePen(penNode: any): JrxmlPen | undefined {
     const pen = extractFirst(penNode);
-    if (!pen) return undefined;
+    if (!pen) {return undefined;}
     return {
         lineWidth: pen['@_lineWidth'] !== undefined ? parseFloat(pen['@_lineWidth']) : undefined,
         lineColor: pen['@_lineColor'] || undefined,
@@ -197,7 +197,7 @@ function parsePen(penNode: any): JrxmlPen | undefined {
 
 function parseBox(boxNode: any): JrxmlBox | undefined {
     const box = extractFirst(boxNode);
-    if (!box) return undefined;
+    if (!box) {return undefined;}
     return {
         topPadding: box['@_topPadding'] !== undefined ? parseInt(box['@_topPadding'], 10) : undefined,
         bottomPadding: box['@_bottomPadding'] !== undefined ? parseInt(box['@_bottomPadding'], 10) : undefined,
@@ -439,7 +439,7 @@ function parseTextProperties(textElement: any): {
     isStrikeThrough?: boolean;
 } {
     const te = extractFirst(textElement);
-    if (!te) return {};
+    if (!te) {return {};}
     const font = extractFirst(te.font);
     return {
         horizontalAlignment: te['@_textAlignment'] || undefined,

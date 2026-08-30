@@ -160,7 +160,7 @@ function resolveCategoryChartData(
             const items: ChartCategoryItem[] = [];
             for (const cat of categoryOrder) {
                 const v = catMap.get(cat) || 0;
-                if (v > globalMax) globalMax = v;
+                if (v > globalMax) {globalMax = v;}
                 items.push({
                     category: cat,
                     value: v,
@@ -180,10 +180,10 @@ function resolveCategoryChartData(
         for (const row of dataset.rows) {
             const catStr = String(row.region || row.productCategory || 'Item');
             const numVal = typeof row.totalAmount === 'number' ? row.totalAmount : 0;
-            if (!categoryOrder.includes(catStr)) categoryOrder.push(catStr);
+            if (!categoryOrder.includes(catStr)) {categoryOrder.push(catStr);}
             catMap.set(catStr, (catMap.get(catStr) || 0) + numVal);
             totalVal += numVal;
-            if (numVal > globalMax) globalMax = numVal;
+            if (numVal > globalMax) {globalMax = numVal;}
         }
 
         const items: ChartCategoryItem[] = categoryOrder.map(cat => ({

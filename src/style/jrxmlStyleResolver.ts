@@ -78,9 +78,9 @@ function cloneBox(box: JrxmlBox): JrxmlBox {
 }
 
 function mergeBoxes(base?: JrxmlBox, override?: JrxmlBox): JrxmlBox | undefined {
-    if (!base && !override) return undefined;
-    if (!base) return override ? cloneBox(override) : undefined;
-    if (!override) return cloneBox(base);
+    if (!base && !override) {return undefined;}
+    if (!base) {return override ? cloneBox(override) : undefined;}
+    if (!override) {return cloneBox(base);}
 
     return {
         topPadding: override.topPadding !== undefined ? override.topPadding : base.topPadding,

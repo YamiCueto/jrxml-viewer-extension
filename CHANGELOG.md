@@ -2,6 +2,39 @@
 
 All notable changes to the "jrxml-viewer" extension will be documented in this file.
 
+## [0.2.0] - 2026-08-30
+
+### Added
+- **JRXML Document Model (AST)**: Strongly-typed intermediate representation covering all JasperReports entities (reports, bands, elements, styles, parameters, fields, variables, groups, boxes, and pens).
+- **Geometric Layout Engine**: Multi-layer page layout pipeline (`BACKGROUND`, `CONTENT`, `FOOTER`, `OVERLAY`) supporting exact page dimensions (595x842), bottom-anchored page footers, recursive frame geometry, and isolated `noData` document states.
+- **Layered Layout Renderer**: Pure rendering architecture completely decoupled from raw XML parsing.
+- **Deterministic Structural Element IDs (`ElementId`)**: Unique, collision-free element addressing across arbitrary nesting depths and bands.
+- **AST Mutation Engine & Atomic XML Persistence**: Safe round-trip XML persistence preserving expressions, comments, formatting, and element hierarchies without relying on regex.
+- **Safe Expression Evaluation**: Pure lexical evaluator for JasperReports expressions (`$P{}`, `$F{}`, `$V{}`, concatenations, ternary expressions, date/number patterns) without arbitrary code execution.
+- **Style Cascade & Resolution**: Multi-level style inheritance supporting `parentStyle`, cyclic dependency detection, box/pen merging, and element property overrides.
+- **Preview Dataset & Aggregations**: Built-in synthetic dataset supporting group and report scope calculations (`Sum`, `Count`, `Average`).
+- **Real SVG Chart Rendering**: Real-time vector SVG rendering for `barChart`, `pieChart`, and `lineChart` derived dynamically from dataset expressions, with axes, grid lines, trigonometric arcs, tooltips, and legends.
+- **Styled Markup Processing**: Safe conversion of JasperReports styled text (`<style isBold="true"...>`, `<b>`, `<i>`, `<u>`, `<font>`) to secure HTML formatting.
+- **Comprehensive Automated Test Suites**: 114 automated unit, layout, rendering, persistence, expression, style, visual, and chart tests with 100% pass rate.
+
+### Changed
+- Replaced legacy regex-based element update logic with AST-driven serialization.
+- Replaced static chart placeholders with real, scalable SVG graphics.
+- Replaced artificial band background color overlays with transparent containers for true report canvas fidelity.
+- Updated marketplace metadata, documentation, and publishing workflows for the 0.2.0 milestone.
+
+### Improved
+- **Box & Pen Styling**: Full support for per-side borders (`topPen`, `bottomPen`, `leftPen`, `rightPen`) with line styles (`Solid`, `Dashed`, `Dotted`, `Double`) and `box-sizing: border-box`.
+- **Typography & Biaxial Alignment**: Synchronized flexbox alignment matching JasperReports horizontal (`Left`, `Center`, `Right`, `Justified`) and vertical (`Top`, `Middle`, `Bottom`) alignment.
+- **HTML Export**: Standalone HTML export embeds complete SVG vector graphics and formatted styles.
+- **Properties & Explorer Synchronization**: Real-time element selection without canvas distortion.
+
+### Fixed
+- Fixed background band vertically displacing content bands on the canvas.
+- Fixed raw XML entity and markup leaks in text elements and hover tooltips.
+- Fixed hardcoded color and italic overrides affecting text fields.
+- Fixed coordinate collision bugs when mutating elements sharing identical `(x, y)` positions.
+
 ## [0.1.9] - 2026-01-18
 
 ### Added

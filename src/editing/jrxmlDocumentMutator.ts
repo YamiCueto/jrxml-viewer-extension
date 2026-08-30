@@ -100,24 +100,24 @@ export function mutateElement(
 
     const el = lookup.element;
 
-    if (patch.x !== undefined) el.geometry.x = patch.x;
-    if (patch.y !== undefined) el.geometry.y = patch.y;
-    if (patch.width !== undefined) el.geometry.width = patch.width;
-    if (patch.height !== undefined) el.geometry.height = patch.height;
+    if (patch.x !== undefined) {el.geometry.x = patch.x;}
+    if (patch.y !== undefined) {el.geometry.y = patch.y;}
+    if (patch.width !== undefined) {el.geometry.width = patch.width;}
+    if (patch.height !== undefined) {el.geometry.height = patch.height;}
 
-    if (patch.forecolor !== undefined) el.forecolor = patch.forecolor;
-    if (patch.backcolor !== undefined) el.backcolor = patch.backcolor;
-    if (patch.mode !== undefined) el.mode = patch.mode;
+    if (patch.forecolor !== undefined) {el.forecolor = patch.forecolor;}
+    if (patch.backcolor !== undefined) {el.backcolor = patch.backcolor;}
+    if (patch.mode !== undefined) {el.mode = patch.mode;}
 
     if (el.type === 'staticText') {
-        if (patch.text !== undefined) el.text = patch.text;
+        if (patch.text !== undefined) {el.text = patch.text;}
     }
 
     if (el.type === 'textField') {
         if (patch.expression !== undefined) {
             el.expression = { raw: patch.expression, type: 'custom' };
         }
-        if (patch.pattern !== undefined) el.pattern = patch.pattern;
+        if (patch.pattern !== undefined) {el.pattern = patch.pattern;}
     }
 
     if (el.type === 'image') {
@@ -133,20 +133,20 @@ export function mutateElement(
     }
 
     if (el.type === 'rectangle') {
-        if (patch.radius !== undefined) el.radius = patch.radius;
+        if (patch.radius !== undefined) {el.radius = patch.radius;}
     }
 
     if (el.type === 'staticText' || el.type === 'textField') {
-        if (patch.fontName !== undefined) el.fontName = patch.fontName;
-        if (patch.fontSize !== undefined) el.fontSize = patch.fontSize;
-        if (patch.isBold !== undefined) el.isBold = patch.isBold;
-        if (patch.isItalic !== undefined) el.isItalic = patch.isItalic;
-        if (patch.isUnderline !== undefined) el.isUnderline = patch.isUnderline;
-        if (patch.isStrikeThrough !== undefined) el.isStrikeThrough = patch.isStrikeThrough;
-        if (patch.horizontalAlignment !== undefined) el.horizontalAlignment = patch.horizontalAlignment;
-        if (patch.verticalAlignment !== undefined) el.verticalAlignment = patch.verticalAlignment;
-        if (patch.rotation !== undefined) el.rotation = patch.rotation;
-        if (patch.markup !== undefined) el.markup = patch.markup;
+        if (patch.fontName !== undefined) {el.fontName = patch.fontName;}
+        if (patch.fontSize !== undefined) {el.fontSize = patch.fontSize;}
+        if (patch.isBold !== undefined) {el.isBold = patch.isBold;}
+        if (patch.isItalic !== undefined) {el.isItalic = patch.isItalic;}
+        if (patch.isUnderline !== undefined) {el.isUnderline = patch.isUnderline;}
+        if (patch.isStrikeThrough !== undefined) {el.isStrikeThrough = patch.isStrikeThrough;}
+        if (patch.horizontalAlignment !== undefined) {el.horizontalAlignment = patch.horizontalAlignment;}
+        if (patch.verticalAlignment !== undefined) {el.verticalAlignment = patch.verticalAlignment;}
+        if (patch.rotation !== undefined) {el.rotation = patch.rotation;}
+        if (patch.markup !== undefined) {el.markup = patch.markup;}
     }
 
     return {

@@ -261,13 +261,13 @@ function formatCompactNumber(num: number): string {
 }
 
 function truncateStr(str: string, maxLen: number): string {
-    if (!str) return '';
-    if (str.length <= maxLen) return str;
+    if (!str) {return '';}
+    if (str.length <= maxLen) {return str;}
     return str.slice(0, maxLen - 1) + '…';
 }
 
 function escapeXml(str: string): string {
-    if (!str) return '';
+    if (!str) {return '';}
     return str
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')

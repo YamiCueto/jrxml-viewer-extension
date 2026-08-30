@@ -72,8 +72,8 @@ export class JrxmlFilesProvider implements vscode.TreeDataProvider<JrxmlFileItem
 
         return items.sort((a, b) => {
             // Folders first
-            if (a.type === 'folder' && b.type === 'file') return -1;
-            if (a.type === 'file' && b.type === 'folder') return 1;
+            if (a.type === 'folder' && b.type === 'file') {return -1;}
+            if (a.type === 'file' && b.type === 'folder') {return 1;}
             return a.label!.toString().localeCompare(b.label!.toString());
         });
     }
