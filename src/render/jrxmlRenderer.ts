@@ -49,7 +49,9 @@ function renderBand(band: LayoutBand): string {
 
 export function renderElement(el: LayoutElement): string {
     const source = el.sourceElement;
+    const style = el.resolvedStyle || {};
     const geometry = el.localGeometry;
+
     const styles: string[] = [
         'position: absolute',
         `left: ${geometry.x}px`,
@@ -58,49 +60,63 @@ export function renderElement(el: LayoutElement): string {
         `height: ${geometry.height}px`
     ];
 
-    if (source.forecolor) {
-        styles.push(`color: ${source.forecolor}`);
+    const forecolor = source.forecolor || style.forecolor;
+    if (forecolor) {
+        styles.push(`color: ${forecolor}`);
     }
 
-    if (source.mode === 'Opaque' && source.backcolor) {
-        styles.push(`background-color: ${source.backcolor}`);
-    } else if (source.backcolor && el.type === 'rectangle') {
-        styles.push(`background-color: ${source.backcolor}`);
+    const mode = source.mode || style.mode;
+    const backcolor = source.backcolor || style.backcolor;
+    if (mode === 'Opaque' && backcolor) {
+        styles.push(`background-color: ${backcolor}`);
+    } else if (backcolor && el.type === 'rectangle') {
+        styles.push(`background-color: ${backcolor}`);
     }
 
-    if (source.fontName) {
-        styles.push(`font-family: ${source.fontName}, sans-serif`);
+    const fontName = source.fontName || style.fontName;
+    if (fontName) {
+        styles.push(`font-family: ${fontName}, sans-serif`);
     }
-    if (source.fontSize) {
-        styles.push(`font-size: ${source.fontSize}px`);
+
+    const fontSize = source.fontSize !== undefined ? source.fontSize : style.fontSize;
+    if (fontSize !== undefined) {
+        styles.push(`font-size: ${fontSize}px`);
     }
-    if (source.isBold) {
+
+    const isBold = source.isBold !== undefined ? source.isBold : style.isBold;
+    if (isBold) {
         styles.push('font-weight: bold');
     }
-    if (source.isItalic) {
+
+    const isItalic = source.isItalic !== undefined ? source.isItalic : style.isItalic;
+    if (isItalic) {
         styles.push('font-style: italic');
     }
-    if (source.isUnderline && source.isStrikeThrough) {
+
+    const isUnderline = source.isUnderline !== undefined ? source.isUnderline : style.isUnderline;
+    const isStrikeThrough = source.isStrikeThrough !== undefined ? source.isStrikeThrough : style.isStrikeThrough;
+    if (isUnderline && isStrikeThrough) {
         styles.push('text-decoration: underline line-through');
-    } else if (source.isUnderline) {
+    } else if (isUnderline) {
         styles.push('text-decoration: underline');
-    } else if (source.isStrikeThrough) {
+    } else if (isStrikeThrough) {
         styles.push('text-decoration: line-through');
     }
 
-    if (source.horizontalAlignment) {
+    const hAlign = source.horizontalAlignment || style.horizontalAlignment;
+    if (hAlign) {
         const alignMap: Record<string, string> = {
             Left: 'left',
             Center: 'center',
             Right: 'right',
             Justified: 'justify'
         };
-        const textAlign = alignMap[source.horizontalAlignment] || source.horizontalAlignment.toLowerCase();
+        const textAlign = alignMap[hAlign] || hAlign.toLowerCase();
         styles.push(`text-align: ${textAlign}`);
     }
 
-    if (source.box) {
-        const box = source.box;
+    const box = source.box || style.box;
+    if (box) {
         if (box.topPen?.lineWidth) {
             styles.push(`border-top: ${box.topPen.lineWidth}px ${box.topPen.lineStyle || 'solid'} ${box.topPen.lineColor || '#000000'}`);
         }
@@ -133,13 +149,14 @@ export function renderElement(el: LayoutElement): string {
         height: geometry.height,
         text: source.text,
         expression: source.expression?.raw || source.subreportExpression?.raw || source.imageExpression?.raw,
-        pattern: source.pattern,
-        fontName: source.fontName,
-        fontSize: source.fontSize,
-        isBold: source.isBold,
-        forecolor: source.forecolor,
-        backcolor: source.backcolor,
-        mode: source.mode,
+        displayValue: el.displayValue,
+        pattern: source.pattern || style.pattern,
+        fontName: fontName,
+        fontSize: fontSize,
+        isBold: isBold,
+        forecolor: forecolor,
+        backcolor: backcolor,
+        mode: mode,
         bandType: el.bandId
     };
 
@@ -148,25 +165,29 @@ export function renderElement(el: LayoutElement): string {
     switch (el.type) {
         case 'staticText': {
             const styleStr = styles.join('; ');
+            const displayText = el.displayValue !== undefined ? el.displayValue : (source.text || '');
             return `<div id="${el.id}" class="element element-text clickable" style="${styleStr}" ${dataAttrs} title="Static Text: ${escapeHtml(source.text || '')}">
-                <div class="element-content">${escapeHtml(source.text || '')}</div>
+                <div class="element-content">${escapeHtml(displayText)}</div>
             </div>`;
         }
 
         case 'textField': {
             const styleStr = styles.join('; ');
             const exprText = source.expression?.raw || '$F{field}';
-            return `<div id="${el.id}" class="element element-field clickable" style="${styleStr}" ${dataAttrs} title="TextField: ${escapeHtml(exprText)}">
-                <div class="element-content">${escapeHtml(exprText)}</div>
+            const displayText = el.displayValue !== undefined ? el.displayValue : exprText;
+            return `<div id="${el.id}" class="element element-field clickable" style="${styleStr}" ${dataAttrs} title="Expression: ${escapeHtml(exprText)}">
+                <div class="element-content">${escapeHtml(displayText)}</div>
             </div>`;
         }
 
         case 'rectangle': {
-            if (source.radius) {
-                styles.push(`border-radius: ${source.radius}px`);
+            const radius = source.radius !== undefined ? source.radius : style.radius;
+            if (radius) {
+                styles.push(`border-radius: ${radius}px`);
             }
-            if (source.pen?.lineWidth) {
-                styles.push(`border: ${source.pen.lineWidth}px ${source.pen.lineStyle || 'solid'} ${source.pen.lineColor || '#000000'}`);
+            const pen = source.pen || style.pen;
+            if (pen?.lineWidth) {
+                styles.push(`border: ${pen.lineWidth}px ${pen.lineStyle || 'solid'} ${pen.lineColor || '#000000'}`);
             }
             const styleStr = styles.join('; ');
             return `<div id="${el.id}" class="element element-rectangle clickable" style="${styleStr}" ${dataAttrs} title="Rectangle (${geometry.width}x${geometry.height})"></div>`;
@@ -174,8 +195,9 @@ export function renderElement(el: LayoutElement): string {
 
         case 'ellipse': {
             styles.push('border-radius: 50%');
-            if (source.pen?.lineWidth) {
-                styles.push(`border: ${source.pen.lineWidth}px ${source.pen.lineStyle || 'solid'} ${source.pen.lineColor || '#000000'}`);
+            const pen = source.pen || style.pen;
+            if (pen?.lineWidth) {
+                styles.push(`border: ${pen.lineWidth}px ${pen.lineStyle || 'solid'} ${pen.lineColor || '#000000'}`);
             } else {
                 styles.push('border: 1px solid #3B82F6');
             }
@@ -184,7 +206,7 @@ export function renderElement(el: LayoutElement): string {
         }
 
         case 'line': {
-            const pen = source.pen;
+            const pen = source.pen || style.pen;
             const width = pen?.lineWidth || 1;
             const color = pen?.lineColor || '#000000';
             const lineStyle = pen?.lineStyle || 'solid';

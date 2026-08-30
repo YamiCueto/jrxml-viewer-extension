@@ -1,4 +1,6 @@
 import { JrxmlElement } from '../model/jrxmlDocumentModel';
+import { ResolvedStyle } from '../style/jrxmlResolvedStyle';
+import { EvaluationContext } from '../expression/jrxmlEvaluationContext';
 
 export type LayerType = 'BACKGROUND' | 'CONTENT' | 'FOOTER' | 'OVERLAY';
 
@@ -43,6 +45,9 @@ export interface LayoutElement {
     positionType?: string;
     stretchType?: string;
     sourceElement: JrxmlElement;
+    resolvedStyle?: ResolvedStyle;
+    displayValue?: string;
+    rawValue?: any;
     children?: LayoutElement[];
 }
 
@@ -79,6 +84,7 @@ export interface LayoutDiagnostic {
 export interface LayoutOptions {
     mode?: LayoutMode;
     maxPages?: number;
+    context?: EvaluationContext;
 }
 
 export interface LayoutResult {

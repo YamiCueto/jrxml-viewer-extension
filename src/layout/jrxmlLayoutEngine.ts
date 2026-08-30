@@ -12,11 +12,19 @@ import {
     BandRole,
     LayerType
 } from './jrxmlLayoutModel';
+import { resolveDocumentStyles, resolveElementStyle } from '../style/jrxmlStyleResolver';
+import { ResolvedStyle } from '../style/jrxmlResolvedStyle';
+import { EvaluationContext, createDefaultPreviewDataset, createEvaluationContext } from '../expression/jrxmlEvaluationContext';
+import { evaluateExpression } from '../expression/jrxmlExpressionEvaluator';
 
 export function layoutJrxmlDocument(doc: JrxmlDocument, options?: LayoutOptions): LayoutResult {
     const report = doc.report;
     const mode: LayoutMode = options?.mode || 'NORMAL_DATA';
     const diagnostics: LayoutDiagnostic[] = [];
+
+    const defaultDataset = createDefaultPreviewDataset(doc);
+    const evalContext: EvaluationContext = options?.context || createEvaluationContext(defaultDataset);
+    const resolvedStyles = resolveDocumentStyles(report.styles || []);
 
     const pageWidth = report.pageWidth || 595;
     const pageHeight = report.pageHeight || 842;
@@ -44,14 +52,14 @@ export function layoutJrxmlDocument(doc: JrxmlDocument, options?: LayoutOptions)
         const page = createPage(1, pageWidth, pageHeight, margins, contentWidth, contentHeight);
         const bgBand = findBandByRole(report.bands, 'BACKGROUND');
         if (bgBand) {
-            const layoutBg = layoutBand(bgBand, 'BACKGROUND', 'BACKGROUND', margins.left, margins.top, contentWidth, contentHeight, diagnostics);
+            const layoutBg = layoutBand(bgBand, 'BACKGROUND', 'BACKGROUND', margins.left, margins.top, contentWidth, contentHeight, resolvedStyles, evalContext, diagnostics);
             page.bands.push(layoutBg);
             page.elements.push(...layoutBg.elements);
         }
 
         const noDataBand = findBandByRole(report.bands, 'NO_DATA');
         if (noDataBand) {
-            const layoutNoData = layoutBand(noDataBand, 'NO_DATA', 'CONTENT', margins.left, margins.top, contentWidth, noDataBand.height, diagnostics);
+            const layoutNoData = layoutBand(noDataBand, 'NO_DATA', 'CONTENT', margins.left, margins.top, contentWidth, noDataBand.height, resolvedStyles, evalContext, diagnostics);
             page.bands.push(layoutNoData);
             page.elements.push(...layoutNoData.elements);
         }
@@ -59,7 +67,7 @@ export function layoutJrxmlDocument(doc: JrxmlDocument, options?: LayoutOptions)
         const pageFooterBand = findBandByRole(report.bands, 'PAGE_FOOTER');
         if (pageFooterBand) {
             const footerY = pageHeight - margins.bottom - pageFooterBand.height;
-            const layoutFooter = layoutBand(pageFooterBand, 'PAGE_FOOTER', 'FOOTER', margins.left, footerY, contentWidth, pageFooterBand.height, diagnostics);
+            const layoutFooter = layoutBand(pageFooterBand, 'PAGE_FOOTER', 'FOOTER', margins.left, footerY, contentWidth, pageFooterBand.height, resolvedStyles, evalContext, diagnostics);
             page.bands.push(layoutFooter);
             page.elements.push(...layoutFooter.elements);
         }
@@ -82,55 +90,55 @@ export function layoutJrxmlDocument(doc: JrxmlDocument, options?: LayoutOptions)
         let currentY = margins.top;
 
         if (bgBand) {
-            const layoutBg = layoutBand(bgBand, 'BACKGROUND', 'BACKGROUND', margins.left, margins.top, contentWidth, contentHeight, diagnostics);
+            const layoutBg = layoutBand(bgBand, 'BACKGROUND', 'BACKGROUND', margins.left, margins.top, contentWidth, contentHeight, resolvedStyles, evalContext, diagnostics);
             currentPage.bands.push(layoutBg);
             currentPage.elements.push(...layoutBg.elements);
         }
 
         if (titleBand) {
-            const layoutTitle = layoutBand(titleBand, 'TITLE', 'CONTENT', margins.left, currentY, contentWidth, titleBand.height, diagnostics);
+            const layoutTitle = layoutBand(titleBand, 'TITLE', 'CONTENT', margins.left, currentY, contentWidth, titleBand.height, resolvedStyles, evalContext, diagnostics);
             currentPage.bands.push(layoutTitle);
             currentPage.elements.push(...layoutTitle.elements);
             currentY += titleBand.height;
         }
 
         if (pageHeaderBand) {
-            const layoutPageHeader = layoutBand(pageHeaderBand, 'PAGE_HEADER', 'CONTENT', margins.left, currentY, contentWidth, pageHeaderBand.height, diagnostics);
+            const layoutPageHeader = layoutBand(pageHeaderBand, 'PAGE_HEADER', 'CONTENT', margins.left, currentY, contentWidth, pageHeaderBand.height, resolvedStyles, evalContext, diagnostics);
             currentPage.bands.push(layoutPageHeader);
             currentPage.elements.push(...layoutPageHeader.elements);
             currentY += pageHeaderBand.height;
         }
 
         for (const gh of groupHeaderBands) {
-            const layoutGH = layoutBand(gh, 'GROUP_HEADER', 'CONTENT', margins.left, currentY, contentWidth, gh.height, diagnostics, gh.name);
+            const layoutGH = layoutBand(gh, 'GROUP_HEADER', 'CONTENT', margins.left, currentY, contentWidth, gh.height, resolvedStyles, evalContext, diagnostics, gh.name);
             currentPage.bands.push(layoutGH);
             currentPage.elements.push(...layoutGH.elements);
             currentY += gh.height;
         }
 
         if (columnHeaderBand) {
-            const layoutColHeader = layoutBand(columnHeaderBand, 'COLUMN_HEADER', 'CONTENT', margins.left, currentY, contentWidth, columnHeaderBand.height, diagnostics);
+            const layoutColHeader = layoutBand(columnHeaderBand, 'COLUMN_HEADER', 'CONTENT', margins.left, currentY, contentWidth, columnHeaderBand.height, resolvedStyles, evalContext, diagnostics);
             currentPage.bands.push(layoutColHeader);
             currentPage.elements.push(...layoutColHeader.elements);
             currentY += columnHeaderBand.height;
         }
 
         if (detailBand) {
-            const layoutDetail = layoutBand(detailBand, 'DETAIL', 'CONTENT', margins.left, currentY, contentWidth, detailBand.height, diagnostics);
+            const layoutDetail = layoutBand(detailBand, 'DETAIL', 'CONTENT', margins.left, currentY, contentWidth, detailBand.height, resolvedStyles, evalContext, diagnostics);
             currentPage.bands.push(layoutDetail);
             currentPage.elements.push(...layoutDetail.elements);
             currentY += detailBand.height;
         }
 
         if (columnFooterBand) {
-            const layoutColFooter = layoutBand(columnFooterBand, 'COLUMN_FOOTER', 'CONTENT', margins.left, currentY, contentWidth, columnFooterBand.height, diagnostics);
+            const layoutColFooter = layoutBand(columnFooterBand, 'COLUMN_FOOTER', 'CONTENT', margins.left, currentY, contentWidth, columnFooterBand.height, resolvedStyles, evalContext, diagnostics);
             currentPage.bands.push(layoutColFooter);
             currentPage.elements.push(...layoutColFooter.elements);
             currentY += columnFooterBand.height;
         }
 
         for (const gf of groupFooterBands) {
-            const layoutGF = layoutBand(gf, 'GROUP_FOOTER', 'CONTENT', margins.left, currentY, contentWidth, gf.height, diagnostics, gf.name);
+            const layoutGF = layoutBand(gf, 'GROUP_FOOTER', 'CONTENT', margins.left, currentY, contentWidth, gf.height, resolvedStyles, evalContext, diagnostics, gf.name);
             currentPage.bands.push(layoutGF);
             currentPage.elements.push(...layoutGF.elements);
             currentY += gf.height;
@@ -141,7 +149,7 @@ export function layoutJrxmlDocument(doc: JrxmlDocument, options?: LayoutOptions)
             if (currentY + summaryBand.height > availableContentY && currentPage.bands.length > 0) {
                 if (pageFooterBand) {
                     const footerY = pageHeight - margins.bottom - pageFooterBand.height;
-                    const layoutFooter = layoutBand(pageFooterBand, 'PAGE_FOOTER', 'FOOTER', margins.left, footerY, contentWidth, pageFooterBand.height, diagnostics);
+                    const layoutFooter = layoutBand(pageFooterBand, 'PAGE_FOOTER', 'FOOTER', margins.left, footerY, contentWidth, pageFooterBand.height, resolvedStyles, evalContext, diagnostics);
                     currentPage.bands.push(layoutFooter);
                     currentPage.elements.push(...layoutFooter.elements);
                 }
@@ -151,19 +159,19 @@ export function layoutJrxmlDocument(doc: JrxmlDocument, options?: LayoutOptions)
                 currentY = margins.top;
 
                 if (bgBand) {
-                    const layoutBg = layoutBand(bgBand, 'BACKGROUND', 'BACKGROUND', margins.left, margins.top, contentWidth, contentHeight, diagnostics);
+                    const layoutBg = layoutBand(bgBand, 'BACKGROUND', 'BACKGROUND', margins.left, margins.top, contentWidth, contentHeight, resolvedStyles, evalContext, diagnostics);
                     currentPage.bands.push(layoutBg);
                     currentPage.elements.push(...layoutBg.elements);
                 }
                 if (pageHeaderBand) {
-                    const layoutPageHeader = layoutBand(pageHeaderBand, 'PAGE_HEADER', 'CONTENT', margins.left, currentY, contentWidth, pageHeaderBand.height, diagnostics);
+                    const layoutPageHeader = layoutBand(pageHeaderBand, 'PAGE_HEADER', 'CONTENT', margins.left, currentY, contentWidth, pageHeaderBand.height, resolvedStyles, evalContext, diagnostics);
                     currentPage.bands.push(layoutPageHeader);
                     currentPage.elements.push(...layoutPageHeader.elements);
                     currentY += pageHeaderBand.height;
                 }
             }
 
-            const layoutSummary = layoutBand(summaryBand, 'SUMMARY', 'CONTENT', margins.left, currentY, contentWidth, summaryBand.height, diagnostics);
+            const layoutSummary = layoutBand(summaryBand, 'SUMMARY', 'CONTENT', margins.left, currentY, contentWidth, summaryBand.height, resolvedStyles, evalContext, diagnostics);
             currentPage.bands.push(layoutSummary);
             currentPage.elements.push(...layoutSummary.elements);
             currentY += summaryBand.height;
@@ -171,7 +179,7 @@ export function layoutJrxmlDocument(doc: JrxmlDocument, options?: LayoutOptions)
 
         if (pageFooterBand) {
             const footerY = pageHeight - margins.bottom - pageFooterBand.height;
-            const layoutFooter = layoutBand(pageFooterBand, 'PAGE_FOOTER', 'FOOTER', margins.left, footerY, contentWidth, pageFooterBand.height, diagnostics);
+            const layoutFooter = layoutBand(pageFooterBand, 'PAGE_FOOTER', 'FOOTER', margins.left, footerY, contentWidth, pageFooterBand.height, resolvedStyles, evalContext, diagnostics);
             currentPage.bands.push(layoutFooter);
             currentPage.elements.push(...layoutFooter.elements);
         }
@@ -236,6 +244,8 @@ function layoutBand(
     y: number,
     width: number,
     height: number,
+    resolvedStyles: Map<string, ResolvedStyle>,
+    context: EvaluationContext,
     diagnostics: LayoutDiagnostic[],
     groupName?: string
 ): LayoutBand {
@@ -251,6 +261,8 @@ function layoutBand(
         undefined,
         width,
         height,
+        resolvedStyles,
+        context,
         diagnostics
     );
 
@@ -275,6 +287,8 @@ function layoutElementsRecursively(
     parentId: string | undefined,
     containerWidth: number,
     containerHeight: number,
+    resolvedStyles: Map<string, ResolvedStyle>,
+    context: EvaluationContext,
     diagnostics: LayoutDiagnostic[]
 ): LayoutElement[] {
     const result: LayoutElement[] = [];
@@ -306,6 +320,30 @@ function layoutElementsRecursively(
             });
         }
 
+        const resolvedStyle = resolveElementStyle(el, resolvedStyles);
+
+        let displayValue: string | undefined = undefined;
+        let rawValue: any = undefined;
+
+        if (el.type === 'staticText') {
+            displayValue = el.text || '';
+            rawValue = el.text;
+        } else if (el.type === 'textField') {
+            const pattern = el.pattern || resolvedStyle.pattern;
+            const evalRes = evaluateExpression(el.expression?.raw, context, pattern);
+            displayValue = evalRes.displayValue;
+            rawValue = evalRes.value;
+            if (evalRes.status === 'UNSUPPORTED' || evalRes.status === 'ERROR') {
+                diagnostics.push({
+                    code: 'EXPRESSION_EVALUATION',
+                    message: `Expression [${el.expression?.raw}]: ${evalRes.errorMessage || evalRes.status}`,
+                    severity: 'INFO',
+                    elementId: elemId,
+                    bandType: bandId
+                });
+            }
+        }
+
         let children: LayoutElement[] | undefined = undefined;
         if (el.children && el.children.length > 0) {
             children = layoutElementsRecursively(
@@ -317,6 +355,8 @@ function layoutElementsRecursively(
                 elemId,
                 localGeometry.width,
                 localGeometry.height,
+                resolvedStyles,
+                context,
                 diagnostics
             );
         }
@@ -333,6 +373,9 @@ function layoutElementsRecursively(
             positionType: el.geometry.positionType,
             stretchType: el.geometry.stretchType,
             sourceElement: el,
+            resolvedStyle,
+            displayValue,
+            rawValue,
             children
         });
     }
