@@ -8,6 +8,10 @@ dist/
 # VS Code extension testing
 .vscode-test/
 
+# Playwright reports and test results
+test-results/
+playwright-report/
+
 # Extension packages
 *.vsix
 
