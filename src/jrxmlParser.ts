@@ -36,7 +36,7 @@ export interface JrxmlField {
 export interface JrxmlVariable {
     name: string;
     class: string;
-    calculation: string;
+    calculation?: string;
     expression?: string;
 }
 

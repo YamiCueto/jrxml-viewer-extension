@@ -5,6 +5,9 @@ import {
     LayoutElement,
     LayerType
 } from '../layout/jrxmlLayoutModel';
+import { renderChartSvg } from './charts/jrxmlChartRenderer';
+import { resolveChartData } from './charts/jrxmlChartData';
+import { createDefaultPreviewDataset } from '../expression/jrxmlEvaluationContext';
 
 export function renderLayoutDocument(layout: LayoutResult): string {
     const pagesHtml = layout.pages.map(page => renderPage(page, layout.pageWidth, layout.pageHeight)).join('\n');
@@ -42,7 +45,6 @@ export function renderPage(page: LayoutPage, pageWidth: number, pageHeight: numb
 function renderBand(band: LayoutBand): string {
     const elementsHtml = band.elements.map(el => renderElement(el)).join('\n');
     return `<div class="band band-${band.type}" style="position: absolute; left: ${band.bounds.x}px; top: ${band.bounds.y}px; width: ${band.bounds.width}px; height: ${band.bounds.height}px; pointer-events: auto;">
-        <div class="band-label">${band.type.toUpperCase()}</div>
         ${elementsHtml}
     </div>`;
 }
@@ -57,7 +59,8 @@ export function renderElement(el: LayoutElement): string {
         `left: ${geometry.x}px`,
         `top: ${geometry.y}px`,
         `width: ${geometry.width}px`,
-        `height: ${geometry.height}px`
+        `height: ${geometry.height}px`,
+        'box-sizing: border-box'
     ];
 
     const forecolor = source.forecolor || style.forecolor;
@@ -69,8 +72,10 @@ export function renderElement(el: LayoutElement): string {
     const backcolor = source.backcolor || style.backcolor;
     if (mode === 'Opaque' && backcolor) {
         styles.push(`background-color: ${backcolor}`);
-    } else if (backcolor && el.type === 'rectangle') {
+    } else if (backcolor && el.type === 'rectangle' && mode !== 'Transparent') {
         styles.push(`background-color: ${backcolor}`);
+    } else {
+        styles.push('background-color: transparent');
     }
 
     const fontName = source.fontName || style.fontName;
@@ -104,6 +109,7 @@ export function renderElement(el: LayoutElement): string {
     }
 
     const hAlign = source.horizontalAlignment || style.horizontalAlignment;
+    let justifyProp = 'flex-start';
     if (hAlign) {
         const alignMap: Record<string, string> = {
             Left: 'left',
@@ -113,29 +119,58 @@ export function renderElement(el: LayoutElement): string {
         };
         const textAlign = alignMap[hAlign] || hAlign.toLowerCase();
         styles.push(`text-align: ${textAlign}`);
+        if (hAlign === 'Center') justifyProp = 'center';
+        else if (hAlign === 'Right') justifyProp = 'flex-end';
+        else if (hAlign === 'Justified') justifyProp = 'space-between';
+    }
+
+    const vAlign = source.verticalAlignment || style.verticalAlignment;
+    let alignProp = 'center';
+    if (vAlign) {
+        if (vAlign === 'Top') alignProp = 'flex-start';
+        else if (vAlign === 'Bottom') alignProp = 'flex-end';
+        else if (vAlign === 'Middle' || vAlign === 'Center') alignProp = 'center';
+    }
+
+    const rotation = source.rotation || style.rotation;
+    if (rotation) {
+        if (rotation === 'Left') {
+            styles.push('writing-mode: vertical-rl; transform: rotate(180deg)');
+        } else if (rotation === 'Right') {
+            styles.push('writing-mode: vertical-rl');
+        } else if (rotation === 'UpsideDown') {
+            styles.push('transform: rotate(180deg)');
+        }
     }
 
     const box = source.box || style.box;
+    let paddingStyles = '';
     if (box) {
         if (box.topPen?.lineWidth) {
-            styles.push(`border-top: ${box.topPen.lineWidth}px ${box.topPen.lineStyle || 'solid'} ${box.topPen.lineColor || '#000000'}`);
+            styles.push(`border-top: ${box.topPen.lineWidth}px ${mapLineStyle(box.topPen.lineStyle)} ${box.topPen.lineColor || '#000000'}`);
         }
         if (box.bottomPen?.lineWidth) {
-            styles.push(`border-bottom: ${box.bottomPen.lineWidth}px ${box.bottomPen.lineStyle || 'solid'} ${box.bottomPen.lineColor || '#000000'}`);
+            styles.push(`border-bottom: ${box.bottomPen.lineWidth}px ${mapLineStyle(box.bottomPen.lineStyle)} ${box.bottomPen.lineColor || '#000000'}`);
         }
         if (box.leftPen?.lineWidth) {
-            styles.push(`border-left: ${box.leftPen.lineWidth}px ${box.leftPen.lineStyle || 'solid'} ${box.leftPen.lineColor || '#000000'}`);
+            styles.push(`border-left: ${box.leftPen.lineWidth}px ${mapLineStyle(box.leftPen.lineStyle)} ${box.leftPen.lineColor || '#000000'}`);
         }
         if (box.rightPen?.lineWidth) {
-            styles.push(`border-right: ${box.rightPen.lineWidth}px ${box.rightPen.lineStyle || 'solid'} ${box.rightPen.lineColor || '#000000'}`);
+            styles.push(`border-right: ${box.rightPen.lineWidth}px ${mapLineStyle(box.rightPen.lineStyle)} ${box.rightPen.lineColor || '#000000'}`);
         }
         if (box.pen?.lineWidth) {
-            styles.push(`border: ${box.pen.lineWidth}px ${box.pen.lineStyle || 'solid'} ${box.pen.lineColor || '#000000'}`);
+            styles.push(`border: ${box.pen.lineWidth}px ${mapLineStyle(box.pen.lineStyle)} ${box.pen.lineColor || '#000000'}`);
         }
-        if (box.topPadding || box.bottomPadding || box.leftPadding || box.rightPadding) {
-            styles.push(`padding: ${box.topPadding || 0}px ${box.rightPadding || 0}px ${box.bottomPadding || 0}px ${box.leftPadding || 0}px`);
+        const topP = box.topPadding || 0;
+        const rightP = box.rightPadding || 0;
+        const bottomP = box.bottomPadding || 0;
+        const leftP = box.leftPadding || 0;
+        if (topP || rightP || bottomP || leftP) {
+            paddingStyles = `padding: ${topP}px ${rightP}px ${bottomP}px ${leftP}px;`;
         }
     }
+
+    const contentStyle = `display: flex; width: 100%; height: 100%; justify-content: ${justifyProp}; align-items: ${alignProp}; box-sizing: border-box; ${paddingStyles}`;
 
     const elementPayload = {
         id: el.id,
@@ -165,18 +200,22 @@ export function renderElement(el: LayoutElement): string {
     switch (el.type) {
         case 'staticText': {
             const styleStr = styles.join('; ');
-            const displayText = el.displayValue !== undefined ? el.displayValue : (source.text || '');
-            return `<div id="${el.id}" class="element element-text clickable" style="${styleStr}" ${dataAttrs} title="Static Text: ${escapeHtml(source.text || '')}">
-                <div class="element-content">${escapeHtml(displayText)}</div>
+            const rawText = el.displayValue !== undefined ? el.displayValue : (source.text || '');
+            const renderedContent = renderFormattedMarkup(rawText, source.markup);
+            const cleanTitle = stripTags(rawText);
+            return `<div id="${el.id}" class="element element-text clickable" style="${styleStr}" ${dataAttrs} title="Static Text: ${escapeHtml(cleanTitle)}">
+                <div class="element-content" style="${contentStyle}">${renderedContent}</div>
             </div>`;
         }
 
         case 'textField': {
             const styleStr = styles.join('; ');
             const exprText = source.expression?.raw || '$F{field}';
-            const displayText = el.displayValue !== undefined ? el.displayValue : exprText;
-            return `<div id="${el.id}" class="element element-field clickable" style="${styleStr}" ${dataAttrs} title="Expression: ${escapeHtml(exprText)}">
-                <div class="element-content">${escapeHtml(displayText)}</div>
+            const rawText = el.displayValue !== undefined ? el.displayValue : exprText;
+            const renderedContent = renderFormattedMarkup(rawText, source.markup);
+            const cleanTitle = stripTags(rawText);
+            return `<div id="${el.id}" class="element element-field clickable" style="${styleStr}" ${dataAttrs} title="Expression: ${escapeHtml(cleanTitle)}">
+                <div class="element-content" style="${contentStyle}">${renderedContent}</div>
             </div>`;
         }
 
@@ -187,7 +226,7 @@ export function renderElement(el: LayoutElement): string {
             }
             const pen = source.pen || style.pen;
             if (pen?.lineWidth) {
-                styles.push(`border: ${pen.lineWidth}px ${pen.lineStyle || 'solid'} ${pen.lineColor || '#000000'}`);
+                styles.push(`border: ${pen.lineWidth}px ${mapLineStyle(pen.lineStyle)} ${pen.lineColor || '#000000'}`);
             }
             const styleStr = styles.join('; ');
             return `<div id="${el.id}" class="element element-rectangle clickable" style="${styleStr}" ${dataAttrs} title="Rectangle (${geometry.width}x${geometry.height})"></div>`;
@@ -197,7 +236,7 @@ export function renderElement(el: LayoutElement): string {
             styles.push('border-radius: 50%');
             const pen = source.pen || style.pen;
             if (pen?.lineWidth) {
-                styles.push(`border: ${pen.lineWidth}px ${pen.lineStyle || 'solid'} ${pen.lineColor || '#000000'}`);
+                styles.push(`border: ${pen.lineWidth}px ${mapLineStyle(pen.lineStyle)} ${pen.lineColor || '#000000'}`);
             } else {
                 styles.push('border: 1px solid #3B82F6');
             }
@@ -209,7 +248,7 @@ export function renderElement(el: LayoutElement): string {
             const pen = source.pen || style.pen;
             const width = pen?.lineWidth || 1;
             const color = pen?.lineColor || '#000000';
-            const lineStyle = pen?.lineStyle || 'solid';
+            const lineStyle = mapLineStyle(pen?.lineStyle);
 
             if (geometry.width >= geometry.height) {
                 styles.push(`border-top: ${width}px ${lineStyle} ${color}`);
@@ -242,41 +281,40 @@ export function renderElement(el: LayoutElement): string {
         case 'image': {
             const styleStr = styles.join('; ');
             const exprText = source.imageExpression?.raw || 'Image';
-            return `<div id="${el.id}" class="element element-image clickable" style="${styleStr}" ${dataAttrs} title="Image: ${escapeHtml(exprText)}">
-                <div class="element-content" style="display: flex; align-items: center; justify-content: center; height: 100%; background-color: rgba(156, 39, 176, 0.05);">🖼️ ${escapeHtml(exprText)}</div>
+            return `<div id="${el.id}" class="element element-image clickable" style="${styleStr}; border: 1px dashed #9C27B0; border-radius: 4px; background: rgba(156, 39, 176, 0.04);" ${dataAttrs} title="Image: ${escapeHtml(exprText)}">
+                <div class="element-content" style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 10px; color: #7B1FA2; font-weight: 500;">
+                    <span style="font-size: 14px; margin-right: 4px;">🖼️</span>
+                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 80%;">${escapeHtml(exprText)}</span>
+                </div>
             </div>`;
         }
 
         case 'subreport': {
             const styleStr = styles.join('; ');
             const exprText = source.subreportExpression?.raw || 'Subreport';
-            return `<div id="${el.id}" class="element element-subreport clickable" style="${styleStr}" ${dataAttrs} title="Subreport: ${escapeHtml(exprText)}">
-                <div class="element-content" style="display: flex; align-items: center; justify-content: center; height: 100%; background-color: rgba(0, 122, 204, 0.05); font-weight: 600;">📊 Subreport: ${escapeHtml(exprText)}</div>
+            return `<div id="${el.id}" class="element element-subreport clickable" style="${styleStr}; border: 1px dashed #0284C7; border-radius: 4px; background: rgba(2, 132, 199, 0.04);" ${dataAttrs} title="Subreport: ${escapeHtml(exprText)}">
+                <div class="element-content" style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 10px; color: #0369A1; font-weight: 500;">
+                    <span style="font-size: 14px; margin-right: 4px;">📑</span>
+                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 80%;">Subreport: ${escapeHtml(exprText)}</span>
+                </div>
             </div>`;
         }
 
         case 'chart': {
+            const chartData = el.resolvedChartData || resolveChartData(source, createDefaultPreviewDataset());
+            styles.push('border: 1px solid #CBD5E1');
+            styles.push('border-radius: 4px');
+            styles.push('background: #FFFFFF');
+            styles.push('box-shadow: 0 1px 3px rgba(0,0,0,0.06)');
+            styles.push('overflow: hidden');
+
             const styleStr = styles.join('; ');
-            const chartType = el.chartType || 'chart';
-            let chartIcon = '📈';
-            let chartTypeName = 'Chart';
+            const chartSvg = renderChartSvg(chartData, geometry.width, geometry.height, style);
+            const title = chartData.title || el.chartType || 'Chart';
 
-            if (chartType === 'barChart') {
-                chartIcon = '📊';
-                chartTypeName = 'Bar Chart';
-            } else if (chartType === 'pieChart') {
-                chartIcon = '🥧';
-                chartTypeName = 'Pie Chart';
-            } else if (chartType === 'lineChart') {
-                chartIcon = '📈';
-                chartTypeName = 'Line Chart';
-            }
-
-            const title = source.chartTitle ? ` - ${source.chartTitle}` : '';
-            return `<div id="${el.id}" class="element element-chart clickable" style="${styleStr}" ${dataAttrs} title="${chartTypeName}${escapeHtml(title)}">
-                <div class="element-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; background-color: rgba(37, 99, 235, 0.05); border: 1px dashed #2563EB;">
-                    <div style="font-size: 14px;">${chartIcon} <strong>${chartTypeName}</strong></div>
-                    ${source.chartTitle ? `<div style="font-size: 10px; color: #64748B; margin-top: 4px;">${escapeHtml(source.chartTitle)}</div>` : ''}
+            return `<div id="${el.id}" class="element element-chart clickable" style="${styleStr}" ${dataAttrs} title="${escapeHtml(title)}">
+                <div style="width: 100%; height: 100%; pointer-events: none;">
+                    ${chartSvg}
                 </div>
             </div>`;
         }
@@ -288,6 +326,76 @@ export function renderElement(el: LayoutElement): string {
             </div>`;
         }
     }
+}
+
+function mapLineStyle(style?: string): string {
+    if (!style) return 'solid';
+    const s = style.toLowerCase();
+    if (s === 'dashed') return 'dashed';
+    if (s === 'dotted') return 'dotted';
+    if (s === 'double') return 'double';
+    return 'solid';
+}
+
+function stripTags(text: string): string {
+    return text.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
+}
+
+function renderFormattedMarkup(text: string, markupType?: string): string {
+    if (!text) return '';
+
+    let decoded = text;
+    if (decoded.includes('&amp;') || decoded.includes('&lt;') || decoded.includes('&gt;') || decoded.includes('&quot;')) {
+        decoded = decoded
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"');
+    }
+
+    const hasStyledTags = /<(style|b|i|u|font)(\s[^>]*)?>[\s\S]*?<\/\1>/i.test(decoded);
+    if (!hasStyledTags && markupType !== 'styled' && markupType !== 'html') {
+        return escapeHtml(decoded);
+    }
+
+    return parseStyledXmlToHtml(decoded);
+}
+
+function parseStyledXmlToHtml(input: string): string {
+    let output = input;
+
+    output = output.replace(/<style\s+([^>]*)>([\s\S]*?)<\/style>/gi, (_, attrs, inner) => {
+        const styleRules: string[] = [];
+        const isBoldMatch = attrs.match(/isBold=["']true["']/i);
+        if (isBoldMatch) styleRules.push('font-weight: bold');
+
+        const isItalicMatch = attrs.match(/isItalic=["']true["']/i);
+        if (isItalicMatch) styleRules.push('font-style: italic');
+
+        const isUnderlineMatch = attrs.match(/isUnderline=["']true["']/i);
+        if (isUnderlineMatch) styleRules.push('text-decoration: underline');
+
+        const forecolorMatch = attrs.match(/forecolor=["']([^"']+)["']/i);
+        if (forecolorMatch) styleRules.push(`color: ${forecolorMatch[1]}`);
+
+        const backcolorMatch = attrs.match(/backcolor=["']([^"']+)["']/i);
+        if (backcolorMatch) styleRules.push(`background-color: ${backcolorMatch[1]}`);
+
+        const sizeMatch = attrs.match(/size=["']([^"']+)["']/i);
+        if (sizeMatch) styleRules.push(`font-size: ${sizeMatch[1]}px`);
+
+        const fontNameMatch = attrs.match(/(?:fontName|pdfFontName)=["']([^"']+)["']/i);
+        if (fontNameMatch) styleRules.push(`font-family: ${fontNameMatch[1]}, sans-serif`);
+
+        const safeInner = escapeHtml(inner);
+        return `<span style="${styleRules.join('; ')}">${safeInner}</span>`;
+    });
+
+    output = output.replace(/<b>([\s\S]*?)<\/b>/gi, (_, inner) => `<strong>${escapeHtml(inner)}</strong>`);
+    output = output.replace(/<i>([\s\S]*?)<\/i>/gi, (_, inner) => `<em>${escapeHtml(inner)}</em>`);
+    output = output.replace(/<u>([\s\S]*?)<\/u>/gi, (_, inner) => `<span style="text-decoration: underline;">${escapeHtml(inner)}</span>`);
+
+    return output;
 }
 
 function escapeHtml(str: string): string {

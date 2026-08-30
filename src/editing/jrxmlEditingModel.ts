@@ -20,6 +20,7 @@ export interface JrxmlElementPatch {
     horizontalAlignment?: string;
     verticalAlignment?: string;
     rotation?: string;
+    markup?: string;
     radius?: number;
 }
 

@@ -419,6 +419,25 @@ export function serializeElement(el: JrxmlElement, indent: string): string {
                 lines.push(`${indent}        <chartLegend ${legAttrs.join(' ')}/>`);
             }
             lines.push(`${indent}    </chart>`);
+            if (el.categoryDataset) {
+                lines.push(`${indent}    <categoryDataset>`);
+                for (const s of el.categoryDataset.series) {
+                    lines.push(`${indent}        <categorySeries>`);
+                    if (s.seriesExpression) lines.push(`${indent}            <seriesExpression><![CDATA[${s.seriesExpression.raw}]]></seriesExpression>`);
+                    if (s.categoryExpression) lines.push(`${indent}            <categoryExpression><![CDATA[${s.categoryExpression.raw}]]></categoryExpression>`);
+                    if (s.valueExpression) lines.push(`${indent}            <valueExpression><![CDATA[${s.valueExpression.raw}]]></valueExpression>`);
+                    if (s.labelExpression) lines.push(`${indent}            <labelExpression><![CDATA[${s.labelExpression.raw}]]></labelExpression>`);
+                    lines.push(`${indent}        </categorySeries>`);
+                }
+                lines.push(`${indent}    </categoryDataset>`);
+            }
+            if (el.pieDataset) {
+                lines.push(`${indent}    <pieDataset>`);
+                if (el.pieDataset.keyExpression) lines.push(`${indent}        <keyExpression><![CDATA[${el.pieDataset.keyExpression.raw}]]></keyExpression>`);
+                if (el.pieDataset.valueExpression) lines.push(`${indent}        <valueExpression><![CDATA[${el.pieDataset.valueExpression.raw}]]></valueExpression>`);
+                if (el.pieDataset.labelExpression) lines.push(`${indent}        <labelExpression><![CDATA[${el.pieDataset.labelExpression.raw}]]></labelExpression>`);
+                lines.push(`${indent}    </pieDataset>`);
+            }
             lines.push(`${indent}</${tagName}>`);
             return lines.join('\n');
         }

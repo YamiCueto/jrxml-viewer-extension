@@ -1,7 +1,3 @@
-export interface JrxmlDocument {
-    report: JrxmlReport;
-}
-
 export interface JrxmlReport {
     name: string;
     language?: string;
@@ -16,7 +12,7 @@ export interface JrxmlReport {
     bottomMargin: number;
     uuid?: string;
     whenNoDataType?: string;
-    properties: Record<string, string>;
+    properties?: Record<string, string>;
     styles: JrxmlStyle[];
     parameters: JrxmlParameter[];
     fields: JrxmlField[];
@@ -28,8 +24,8 @@ export interface JrxmlReport {
 
 export interface JrxmlStyle {
     name: string;
-    parentStyle?: string;
     isDefault?: boolean;
+    parentStyle?: string;
     fontName?: string;
     fontSize?: number;
     isBold?: boolean;
@@ -60,7 +56,7 @@ export interface JrxmlField {
 export interface JrxmlVariable {
     name: string;
     class: string;
-    calculation: string;
+    calculation?: string;
     resetType?: string;
     resetGroup?: string;
     expression?: JrxmlExpression;
@@ -121,6 +117,23 @@ export interface JrxmlSubreportParameter {
     expression?: JrxmlExpression;
 }
 
+export interface JrxmlCategorySeries {
+    seriesExpression?: JrxmlExpression;
+    categoryExpression?: JrxmlExpression;
+    valueExpression?: JrxmlExpression;
+    labelExpression?: JrxmlExpression;
+}
+
+export interface JrxmlCategoryDataset {
+    series: JrxmlCategorySeries[];
+}
+
+export interface JrxmlPieDataset {
+    keyExpression?: JrxmlExpression;
+    valueExpression?: JrxmlExpression;
+    labelExpression?: JrxmlExpression;
+}
+
 export interface JrxmlElement {
     id?: string;
     uuid?: string;
@@ -171,4 +184,10 @@ export interface JrxmlElement {
         textColor?: string;
         backgroundColor?: string;
     };
+    categoryDataset?: JrxmlCategoryDataset;
+    pieDataset?: JrxmlPieDataset;
+}
+
+export interface JrxmlDocument {
+    report: JrxmlReport;
 }

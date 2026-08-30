@@ -146,6 +146,7 @@ export function mutateElement(
         if (patch.horizontalAlignment !== undefined) el.horizontalAlignment = patch.horizontalAlignment;
         if (patch.verticalAlignment !== undefined) el.verticalAlignment = patch.verticalAlignment;
         if (patch.rotation !== undefined) el.rotation = patch.rotation;
+        if (patch.markup !== undefined) el.markup = patch.markup;
     }
 
     return {

@@ -48,6 +48,7 @@ export interface LayoutElement {
     resolvedStyle?: ResolvedStyle;
     displayValue?: string;
     rawValue?: any;
+    resolvedChartData?: any;
     children?: LayoutElement[];
 }
 

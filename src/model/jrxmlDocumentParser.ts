@@ -621,6 +621,30 @@ export function parseElementsFromContainer(containerNode: any): JrxmlElement[] {
             const chartSubtitleNode = extractFirst(chartElem.chartSubtitle || elem.chartSubtitle);
             const chartLegendNode = extractFirst(chartElem.chartLegend || elem.chartLegend);
 
+            const categoryDatasetNode = extractFirst(elem.categoryDataset);
+            let categoryDataset = undefined;
+            if (categoryDatasetNode) {
+                const seriesNodes = toArray(categoryDatasetNode.categorySeries);
+                categoryDataset = {
+                    series: seriesNodes.map((s: any) => ({
+                        seriesExpression: parseExpression(s.seriesExpression),
+                        categoryExpression: parseExpression(s.categoryExpression),
+                        valueExpression: parseExpression(s.valueExpression),
+                        labelExpression: parseExpression(s.labelExpression)
+                    }))
+                };
+            }
+
+            const pieDatasetNode = extractFirst(elem.pieDataset);
+            let pieDataset = undefined;
+            if (pieDatasetNode) {
+                pieDataset = {
+                    keyExpression: parseExpression(pieDatasetNode.keyExpression),
+                    valueExpression: parseExpression(pieDatasetNode.valueExpression),
+                    labelExpression: parseExpression(pieDatasetNode.labelExpression)
+                };
+            }
+
             elements.push({
                 type: 'chart',
                 chartType: tagName === 'chart' ? (chartElem['@_chartType'] || 'chart') : tagName,
@@ -631,7 +655,9 @@ export function parseElementsFromContainer(containerNode: any): JrxmlElement[] {
                 legend: chartLegendNode ? {
                     textColor: chartLegendNode['@_textColor'] || undefined,
                     backgroundColor: chartLegendNode['@_backgroundColor'] || undefined
-                } : undefined
+                } : undefined,
+                categoryDataset,
+                pieDataset
             });
         }
     }
