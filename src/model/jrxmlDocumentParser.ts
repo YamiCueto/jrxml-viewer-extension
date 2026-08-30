@@ -105,8 +105,28 @@ export function parseJrxmlDocument(xmlContent: string): JrxmlDocument {
         queryString: parseQueryString(jasperReport)
     };
 
-    return { report };
+    const doc: JrxmlDocument = { report };
+    assignStructuralIds(doc);
+    return doc;
 }
+
+function assignStructuralIds(doc: JrxmlDocument): void {
+    for (const band of doc.report.bands) {
+        assignIdsToElements(band.elements, `band:${band.type}`);
+    }
+}
+
+function assignIdsToElements(elements: JrxmlElement[], prefix: string): void {
+    for (let i = 0; i < elements.length; i++) {
+        const el = elements[i];
+        const currentId = `${prefix}/el:${i}`;
+        el.id = currentId;
+        if (el.children && el.children.length > 0) {
+            assignIdsToElements(el.children, currentId);
+        }
+    }
+}
+
 
 function toArray<T = any>(node: any): T[] {
     if (node === undefined || node === null) return [];

@@ -138,7 +138,7 @@ export function layoutJrxmlDocument(doc: JrxmlDocument, options?: LayoutOptions)
 
         if (summaryBand) {
             const availableContentY = pageHeight - margins.bottom - (pageFooterBand ? pageFooterBand.height : 0);
-            if (currentY + summaryBand.height > availableContentY && currentPage.bands.length > 1) {
+            if (currentY + summaryBand.height > availableContentY && currentPage.bands.length > 0) {
                 if (pageFooterBand) {
                     const footerY = pageHeight - margins.bottom - pageFooterBand.height;
                     const layoutFooter = layoutBand(pageFooterBand, 'PAGE_FOOTER', 'FOOTER', margins.left, footerY, contentWidth, pageFooterBand.height, diagnostics);
