@@ -3,19 +3,25 @@ const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
 const { startHarnessServer } = require('./workbenchHarness');
+const { parseJrxmlDocument } = require('../../out/model/jrxmlDocumentParser');
+const { layoutJrxmlDocument } = require('../../out/layout/jrxmlLayoutEngine');
+const { generateStandaloneHtml } = require('../../out/export/jrxmlHtmlExporter');
 
 async function runE2EEvidenceSuite() {
-    console.log('Starting Playwright Visual Evidence & E2E Suite...\n');
+    console.log('Starting Playwright Visual Evidence & E2E Suite for v0.3.0...\n');
 
-    const fixturePath = path.join(__dirname, '..', 'fixtures', 'complex-report.jrxml');
-    const jrxmlContent = fs.readFileSync(fixturePath, 'utf8');
+    const complexFixturePath = path.join(__dirname, '..', 'fixtures', 'complex-report.jrxml');
+    const complexJrxmlContent = fs.readFileSync(complexFixturePath, 'utf8');
 
-    const screenshotsDir = path.join(__dirname, '..', '..', 'screenshots', 'v0.2.0');
+    const barcodeFixturePath = path.join(__dirname, '..', 'fixtures', 'barcode-report.jrxml');
+    const barcodeJrxmlContent = fs.readFileSync(barcodeFixturePath, 'utf8');
+
+    const screenshotsDir = path.join(__dirname, '..', '..', 'screenshots', 'v0.3.0');
     if (!fs.existsSync(screenshotsDir)) {
         fs.mkdirSync(screenshotsDir, { recursive: true });
     }
 
-    const { server, url } = await startHarnessServer(jrxmlContent, { port: 9876, showWorkbench: true });
+    const { server, url } = await startHarnessServer(complexJrxmlContent, { port: 9876, showWorkbench: true });
     console.log(`✔ Harness server running at ${url}`);
 
     const browser = await chromium.launch({
@@ -128,8 +134,43 @@ async function runE2EEvidenceSuite() {
     assert(fs.existsSync(explorerPath), 'explorer.png must be created');
     console.log(`✔ Test 11: Captured explorer.png (${(fs.statSync(explorerPath).size / 1024).toFixed(1)} KB).`);
 
-    await browser.close();
     server.close();
+
+    const { server: bcServer, url: bcUrl } = await startHarnessServer(barcodeJrxmlContent, { port: 9879, showWorkbench: true });
+    await page.goto(bcUrl);
+    await page.waitForSelector('.element-barcode svg', { state: 'visible', timeout: 5000 });
+
+    const barcodeSvgs = await page.$$eval('.element-barcode svg', els => els.length);
+    assert.strictEqual(barcodeSvgs, 4, `All 4 barcode SVG elements must be rendered (got ${barcodeSvgs})`);
+    console.log('✔ Test 12: Barcode and QR components verified.');
+
+    const barcodesPath = path.join(screenshotsDir, 'barcodes.png');
+    await page.screenshot({ path: barcodesPath });
+    assert(fs.existsSync(barcodesPath), 'barcodes.png must be created');
+    console.log(`✔ Test 13: Captured barcodes.png (${(fs.statSync(barcodesPath).size / 1024).toFixed(1)} KB).`);
+
+    bcServer.close();
+
+    const exportDoc = parseJrxmlDocument(complexJrxmlContent);
+    const exportLayout = layoutJrxmlDocument(exportDoc);
+    const standaloneHtml = generateStandaloneHtml(exportLayout, exportDoc);
+
+    const tempExportPath = path.join(screenshotsDir, 'standalone_preview.html');
+    fs.writeFileSync(tempExportPath, standaloneHtml, 'utf8');
+
+    await page.goto(`file://${tempExportPath}`);
+    await page.waitForSelector('.jrxml-page', { state: 'visible' });
+
+    const exportScreenshotPath = path.join(screenshotsDir, 'export.png');
+    await page.screenshot({ path: exportScreenshotPath });
+    assert(fs.existsSync(exportScreenshotPath), 'export.png must be created');
+    console.log(`✔ Test 14: Captured export.png (${(fs.statSync(exportScreenshotPath).size / 1024).toFixed(1)} KB).`);
+
+    if (fs.existsSync(tempExportPath)) {
+        fs.unlinkSync(tempExportPath);
+    }
+
+    await browser.close();
 
     console.log('\n========================================');
     console.log('All Playwright E2E & Visual Evidence Tests PASSED (100%)');
