@@ -28,7 +28,18 @@ function generateHarnessHtml(jrxmlContent, customOptions = {}) {
                 </div>
                 <div class="toolbar-section">
                     <button id="zoomOut" class="toolbar-btn">−</button>
-                    <span id="zoomLevel">100%</span>
+                    <select id="zoomPreset" class="toolbar-select" title="Zoom Presets">
+                        <option value="fit-width" selected>Fit Width</option>
+                        <option value="fit-page">Fit Page</option>
+                        <option value="0.5">50%</option>
+                        <option value="0.75">75%</option>
+                        <option value="1">100%</option>
+                        <option value="1.25">125%</option>
+                        <option value="1.5">150%</option>
+                        <option value="2">200%</option>
+                        <option value="custom" disabled hidden>Custom</option>
+                    </select>
+                    <span id="zoomLevel">Fit Width</span>
                     <button id="zoomIn" class="toolbar-btn">+</button>
                     <button id="exportHtml" class="toolbar-btn">📄 Export HTML</button>
                     <button id="toggleProps" class="toolbar-btn">🔧 Properties</button>

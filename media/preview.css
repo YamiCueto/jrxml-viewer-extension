@@ -80,10 +80,26 @@ body {
     background-color: var(--accent-color);
 }
 
+.toolbar-select {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    outline: none;
+}
+
+.toolbar-select:focus {
+    border-color: var(--accent-color);
+}
+
 #zoomLevel {
     min-width: 50px;
     text-align: center;
     font-size: 12px;
+    color: var(--text-secondary);
 }
 
 .sidebar {

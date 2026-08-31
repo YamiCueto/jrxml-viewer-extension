@@ -15,11 +15,24 @@ import { outputChannel } from './extension';
 export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider {
     private static readonly viewType = 'jrxml-viewer.editor';
 
+    private activePanels = new Set<vscode.WebviewPanel>();
+    private activePanel: vscode.WebviewPanel | undefined;
+
     constructor(
         private readonly context: vscode.ExtensionContext,
         private readonly elementsProvider: JrxmlElementsProvider,
         private readonly propertiesProvider: JrxmlPropertiesProvider
     ) {}
+
+    public postMessageToActiveEditor(message: any): void {
+        if (this.activePanel) {
+            this.activePanel.webview.postMessage(message);
+        } else {
+            for (const panel of this.activePanels) {
+                panel.webview.postMessage(message);
+            }
+        }
+    }
 
     async openCustomDocument(
         uri: vscode.Uri,
@@ -35,6 +48,22 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
         token: vscode.CancellationToken
     ): Promise<void> {
         outputChannel.appendLine(`[EditorProvider] Opening custom editor for: ${document.uri.fsPath}`);
+
+        this.activePanels.add(webviewPanel);
+        this.activePanel = webviewPanel;
+
+        webviewPanel.onDidChangeViewState(e => {
+            if (e.webviewPanel.active) {
+                this.activePanel = e.webviewPanel;
+            }
+        });
+
+        webviewPanel.onDidDispose(() => {
+            this.activePanels.delete(webviewPanel);
+            if (this.activePanel === webviewPanel) {
+                this.activePanel = this.activePanels.values().next().value;
+            }
+        });
 
         const textDocument = await vscode.workspace.openTextDocument(document.uri);
         this.elementsProvider.setCurrentDocument(textDocument);
@@ -83,6 +112,11 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
                         break;
                     case 'editElement':
                         vscode.window.showInformationMessage(`Editing: ${message.elementType} at (${message.x}, ${message.y})`);
+                        break;
+                    case 'elementSelected':
+                        if (message.elementData) {
+                            this.propertiesProvider.setSelectedElement(message.elementData);
+                        }
                         break;
                     case 'updateElement':
                         if (!currentDoc) {
@@ -213,9 +247,20 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
                     <span class="toolbar-info">${layout.pageWidth}×${layout.pageHeight} (Content: ${layout.contentWidth}×${layout.contentHeight})</span>
                 </div>
                 <div class="toolbar-section">
-                    <button id="zoomOut" class="toolbar-btn">−</button>
-                    <span id="zoomLevel">100%</span>
-                    <button id="zoomIn" class="toolbar-btn">+</button>
+                    <button id="zoomOut" class="toolbar-btn" title="Zoom Out (Ctrl+Minus)">−</button>
+                    <select id="zoomPreset" class="toolbar-select" title="Zoom Presets">
+                        <option value="fit-width" selected>Fit Width</option>
+                        <option value="fit-page">Fit Page</option>
+                        <option value="0.5">50%</option>
+                        <option value="0.75">75%</option>
+                        <option value="1">100%</option>
+                        <option value="1.25">125%</option>
+                        <option value="1.5">150%</option>
+                        <option value="2">200%</option>
+                        <option value="custom" disabled hidden>Custom</option>
+                    </select>
+                    <span id="zoomLevel">Fit Width</span>
+                    <button id="zoomIn" class="toolbar-btn" title="Zoom In (Ctrl+Plus)">+</button>
                     <button id="exportHtml" class="toolbar-btn">📄 Export HTML</button>
                     <button id="toggleProps" class="toolbar-btn">🔧 Properties</button>
                 </div>
@@ -280,10 +325,66 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
                     <button id="closeProps" class="close-btn">✕</button>
                 </div>
                 <div id="propertiesContent" class="properties-content">
-                    <p>Click on an element to see its properties</p>
+                    <div class="no-selection">Select an element to edit its properties</div>
                 </div>
             </div>
         `;
+    }
+
+    private async exportToHtml(layout: LayoutResult | null, doc: JrxmlDocument | null, sourceUri: vscode.Uri): Promise<void> {
+        if (!layout || !doc) {
+            vscode.window.showErrorMessage('No report layout available to export');
+            return;
+        }
+
+        try {
+            const htmlContent = this.generateStandaloneHtml(layout, doc);
+            const defaultExportUri = vscode.Uri.file(sourceUri.fsPath.replace(/\.jrxml$/i, '_export.html'));
+
+            const saveUri = await vscode.window.showSaveDialog({
+                defaultUri: defaultExportUri,
+                filters: {
+                    'HTML Files': ['html', 'htm']
+                },
+                saveLabel: 'Export Report HTML'
+            });
+
+            if (saveUri) {
+                await vscode.workspace.fs.writeFile(saveUri, Buffer.from(htmlContent, 'utf8'));
+                vscode.window.showInformationMessage(`Report exported successfully to: ${path.basename(saveUri.fsPath)}`);
+            }
+        } catch (error) {
+            vscode.window.showErrorMessage(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }
+
+    private generateStandaloneHtml(layout: LayoutResult, doc: JrxmlDocument): string {
+        const renderedPagesHtml = renderLayoutDocument(layout);
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${doc.report.name} — Standalone Preview</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+        }
+        .jrxml-page {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+        }
+    </style>
+</head>
+<body>
+    ${renderedPagesHtml}
+</body>
+</html>`;
     }
 
     private getNonce(): string {
@@ -293,59 +394,5 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
             text += possible.charAt(Math.floor(Math.random() * possible.length));
         }
         return text;
-    }
-
-    private async exportToHtml(layoutResult: LayoutResult | null, doc: JrxmlDocument | null, uri: vscode.Uri): Promise<void> {
-        if (!layoutResult && !doc) {
-            vscode.window.showErrorMessage('No report data to export');
-            return;
-        }
-
-        const htmlContent = this.generateStandaloneHtmlFromLayout(layoutResult || layoutJrxmlDocument(doc!));
-        const fileName = uri.fsPath.replace('.jrxml', '_export.html');
-        const exportUri = vscode.Uri.file(fileName);
-
-        try {
-            await vscode.workspace.fs.writeFile(exportUri, Buffer.from(htmlContent, 'utf8'));
-            vscode.window.showInformationMessage(`Report exported to: ${fileName}`);
-            
-            const openFile = await vscode.window.showInformationMessage(
-                'Export successful!', 
-                'Open File', 
-                'Reveal in Explorer'
-            );
-            
-            if (openFile === 'Open File') {
-                await vscode.commands.executeCommand('vscode.open', exportUri);
-            } else if (openFile === 'Reveal in Explorer') {
-                await vscode.commands.executeCommand('revealFileInOS', exportUri);
-            }
-        } catch (error) {
-            vscode.window.showErrorMessage(`Failed to export: ${error}`);
-        }
-    }
-
-    private generateStandaloneHtmlFromLayout(layout: LayoutResult): string {
-        const renderedPages = renderLayoutDocument(layout);
-        return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${layout.reportName} - JRXML Report</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; margin: 0; padding: 40px; background: #424242; display: flex; flex-direction: column; align-items: center; }
-        .band { position: absolute; overflow: visible; }
-        .band-label { display: none; }
-        .element { position: absolute; box-sizing: border-box; overflow: hidden; }
-        .element-content { width: 100%; height: 100%; display: flex; align-items: center; }
-        .element-text { color: #000; }
-        .element-field { color: #000; }
-    </style>
-</head>
-<body>
-    ${renderedPages}
-</body>
-</html>`;
     }
 }

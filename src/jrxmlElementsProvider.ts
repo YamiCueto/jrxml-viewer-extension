@@ -77,7 +77,7 @@ export class JrxmlElementsProvider implements vscode.TreeDataProvider<ElementIte
                 const bandItem = new ElementItem(
                     bandLabel,
                     'band',
-                    { height: band.height }
+                    { height: band.height, bandType: band.type }
                 );
 
                 bandItem.children = this.convertElementsToItems(band.elements);
@@ -119,17 +119,37 @@ export class JrxmlElementsProvider implements vscode.TreeDataProvider<ElementIte
             } else if (el.type === 'subreport') {
                 const expr = el.subreportExpression?.raw || 'Subreport';
                 label = `Subreport: ${expr.length > 20 ? expr.substring(0, 20) + '...' : expr}`;
+            } else if (el.type === 'componentElement' && el.barcodeComponent) {
+                const bc = el.barcodeComponent;
+                const expr = bc.codeExpression?.raw || 'Barcode';
+                label = `${bc.barcodeType}: ${expr.length > 18 ? expr.substring(0, 18) + '...' : expr}`;
+                description = `Barcode (${pos.x}, ${pos.y})`;
             } else if (el.type === 'frame') {
                 label = `Frame (${el.children?.length || 0} items)`;
             }
 
             const item = new ElementItem(label, el.type, {
+                id: el.id,
                 x: pos.x,
                 y: pos.y,
                 width: pos.width,
                 height: pos.height
             });
             item.description = description;
+
+            item.command = {
+                command: 'jrxmlElements.revealElement',
+                title: 'Reveal Element in Preview',
+                arguments: [{
+                    id: el.id,
+                    label: label,
+                    type: el.type,
+                    x: pos.x,
+                    y: pos.y,
+                    width: pos.width,
+                    height: pos.height
+                }]
+            };
 
             if (el.children && el.children.length > 0) {
                 item.children = this.convertElementsToItems(el.children);
@@ -185,6 +205,7 @@ export class ElementItem extends vscode.TreeItem {
             case 'line': return new vscode.ThemeIcon('remove');
             case 'chart': return new vscode.ThemeIcon('graph');
             case 'subreport': return new vscode.ThemeIcon('file-submodule');
+            case 'componentElement': return new vscode.ThemeIcon('symbol-constant');
             case 'frame': return new vscode.ThemeIcon('symbol-structure');
             case 'error': return new vscode.ThemeIcon('error');
             default: return new vscode.ThemeIcon('symbol-misc');

@@ -7,6 +7,7 @@ export class JrxmlPropertiesProvider implements vscode.TreeDataProvider<Property
     readonly onDidChangeTreeData: vscode.Event<PropertyItem | undefined | null | void> = this._onDidChangeTreeData.event;
 
     private currentDocument: vscode.TextDocument | undefined;
+    private selectedElementData: any = null;
 
     constructor() {
         vscode.window.onDidChangeActiveTextEditor(editor => {
@@ -29,6 +30,12 @@ export class JrxmlPropertiesProvider implements vscode.TreeDataProvider<Property
 
     setCurrentDocument(document: vscode.TextDocument): void {
         this.currentDocument = document;
+        this.selectedElementData = null;
+        this.refresh();
+    }
+
+    setSelectedElement(data: any): void {
+        this.selectedElementData = data;
         this.refresh();
     }
 
@@ -51,6 +58,42 @@ export class JrxmlPropertiesProvider implements vscode.TreeDataProvider<Property
             const report = doc.report;
 
             const items: PropertyItem[] = [];
+
+            if (this.selectedElementData) {
+                const sel = this.selectedElementData;
+                const selCategory = new PropertyItem('Selected Element', `${sel.type || 'Element'}`, 'category');
+                const selChildren: PropertyItem[] = [
+                    new PropertyItem('Type', sel.type || '', 'property'),
+                    new PropertyItem('Position', `(${sel.x}, ${sel.y})`, 'property'),
+                    new PropertyItem('Dimensions', `${sel.width} × ${sel.height}px`, 'property')
+                ];
+                if (sel.text !== undefined) {
+                    selChildren.push(new PropertyItem('Text', String(sel.text), 'property'));
+                }
+                if (sel.expression !== undefined) {
+                    selChildren.push(new PropertyItem('Expression', String(sel.expression), 'property'));
+                }
+                if (sel.displayValue !== undefined) {
+                    selChildren.push(new PropertyItem('Display Value', String(sel.displayValue), 'property'));
+                }
+                if (sel.fontName) {
+                    selChildren.push(new PropertyItem('Font Name', sel.fontName, 'property'));
+                }
+                if (sel.fontSize !== undefined) {
+                    selChildren.push(new PropertyItem('Font Size', `${sel.fontSize}px`, 'property'));
+                }
+                if (sel.isBold !== undefined) {
+                    selChildren.push(new PropertyItem('Bold', sel.isBold ? 'true' : 'false', 'property'));
+                }
+                if (sel.forecolor) {
+                    selChildren.push(new PropertyItem('Forecolor', sel.forecolor, 'property'));
+                }
+                if (sel.backcolor) {
+                    selChildren.push(new PropertyItem('Backcolor', sel.backcolor, 'property'));
+                }
+                selCategory.children = selChildren;
+                items.push(selCategory);
+            }
 
             const basicInfo = new PropertyItem('Document Info', '', 'category');
             basicInfo.children = [

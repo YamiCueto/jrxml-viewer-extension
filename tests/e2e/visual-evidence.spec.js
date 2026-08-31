@@ -85,4 +85,34 @@ test.describe('JRXML Viewer Visual Evidence E2E Suite', () => {
         await expect(page.locator('text="▾ JRXML FILES"')).toBeVisible();
         await expect(page.locator('text="▾ DOCUMENT PROPERTIES"')).toBeVisible();
     });
+
+    test('supports zoom presets (Fit Width, Fit Page, 150%)', async ({ page }) => {
+        await page.goto(serverUrl);
+        const zoomSelect = page.locator('#zoomPreset');
+        await expect(zoomSelect).toBeVisible();
+
+        await zoomSelect.selectOption('1.5');
+        const scale150 = await page.locator('#canvas').evaluate(el => el.style.transform);
+        expect(scale150).toBe('scale(1.5)');
+        await expect(page.locator('#zoomLevel')).toHaveText('150%');
+
+        await zoomSelect.selectOption('fit-width');
+        const scaleFitWidth = await page.locator('#canvas').evaluate(el => el.style.transform);
+        expect(scaleFitWidth).toMatch(/scale\([0-9.]+\)/);
+    });
+
+    test('supports selectElement message to reveal and select element from sidebar', async ({ page }) => {
+        await page.goto(serverUrl);
+        const firstElemId = await page.locator('.layer-content .element.clickable').first().getAttribute('id');
+        expect(firstElemId).toBeDefined();
+
+        await page.evaluate((id) => {
+            window.postMessage({ command: 'selectElement', elementId: id }, '*');
+        }, firstElemId);
+
+        await page.waitForSelector('.element.clickable.selected', { state: 'visible' });
+        const selectedId = await page.locator('.element.clickable.selected').getAttribute('id');
+        expect(selectedId).toBe(firstElemId);
+        await expect(page.locator('#propertiesPanel')).toHaveClass(/visible/);
+    });
 });

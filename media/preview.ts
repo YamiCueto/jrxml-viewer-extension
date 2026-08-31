@@ -30,37 +30,138 @@ interface ElementData {
 (function() {
     const vscode = acquireVsCodeApi();
 
+    let zoomMode: 'fit-width' | 'fit-page' | 'custom' = 'fit-width';
     let currentZoom: number = 1.0;
     const zoomStep: number = 0.1;
-    const minZoom: number = 0.25;
-    const maxZoom: number = 3.0;
+    const minZoom: number = 0.2;
+    const maxZoom: number = 4.0;
     let selectedElement: HTMLElement | null = null;
     let currentElementData: ElementData | null = null;
 
-    // Initialize zoom controls
     const zoomInBtn = document.getElementById('zoomIn') as HTMLButtonElement;
     const zoomOutBtn = document.getElementById('zoomOut') as HTMLButtonElement;
+    const zoomPresetSelect = document.getElementById('zoomPreset') as HTMLSelectElement;
     const zoomLevelSpan = document.getElementById('zoomLevel') as HTMLSpanElement;
     const canvas = document.getElementById('canvas') as HTMLDivElement;
+    const previewContainer = document.querySelector('.preview-container') as HTMLDivElement;
     const exportHtmlBtn = document.getElementById('exportHtml') as HTMLButtonElement;
     const togglePropsBtn = document.getElementById('toggleProps') as HTMLButtonElement;
     const closePropsBtn = document.getElementById('closeProps') as HTMLButtonElement;
     const propertiesPanel = document.getElementById('propertiesPanel') as HTMLDivElement;
     const propertiesContent = document.getElementById('propertiesContent') as HTMLDivElement;
 
+    function getReportDimensions(): { width: number; height: number } {
+        const page = document.querySelector('.jrxml-page') as HTMLElement;
+        if (page) {
+            const width = parseFloat(page.style.width) || page.offsetWidth || 595;
+            const height = parseFloat(page.style.height) || page.offsetHeight || 842;
+            return { width, height };
+        }
+        return { width: 595, height: 842 };
+    }
+
+    function calculateFitWidth(): number {
+        if (!previewContainer) {
+            return 1.0;
+        }
+        const availableWidth = previewContainer.clientWidth - 80;
+        const { width } = getReportDimensions();
+        if (width <= 0) {
+            return 1.0;
+        }
+        const scale = availableWidth / width;
+        return Math.max(minZoom, Math.min(maxZoom, Math.round(scale * 100) / 100));
+    }
+
+    function calculateFitPage(): number {
+        if (!previewContainer) {
+            return 1.0;
+        }
+        const availableWidth = previewContainer.clientWidth - 80;
+        const availableHeight = previewContainer.clientHeight - 80;
+        const { width, height } = getReportDimensions();
+        if (width <= 0 || height <= 0) {
+            return 1.0;
+        }
+        const scale = Math.min(availableWidth / width, availableHeight / height);
+        return Math.max(minZoom, Math.min(maxZoom, Math.round(scale * 100) / 100));
+    }
+
+    function applyZoom(mode?: 'fit-width' | 'fit-page' | 'custom', customValue?: number): void {
+        if (mode) {
+            zoomMode = mode;
+        }
+
+        if (zoomMode === 'fit-width') {
+            currentZoom = calculateFitWidth();
+        } else if (zoomMode === 'fit-page') {
+            currentZoom = calculateFitPage();
+        } else if (customValue !== undefined) {
+            currentZoom = Math.max(minZoom, Math.min(maxZoom, customValue));
+        }
+
+        updateZoomUI();
+    }
+
+    function updateZoomUI(): void {
+        if (canvas) {
+            canvas.style.transform = `scale(${currentZoom})`;
+        }
+        if (zoomLevelSpan) {
+            zoomLevelSpan.textContent = `${Math.round(currentZoom * 100)}%`;
+        }
+        if (zoomPresetSelect) {
+            if (zoomMode === 'fit-width') {
+                zoomPresetSelect.value = 'fit-width';
+            } else if (zoomMode === 'fit-page') {
+                zoomPresetSelect.value = 'fit-page';
+            } else {
+                const rounded = (Math.round(currentZoom * 100) / 100).toString();
+                const matchedOption = Array.from(zoomPresetSelect.options).find(opt => opt.value === rounded);
+                if (matchedOption) {
+                    zoomPresetSelect.value = rounded;
+                } else {
+                    zoomPresetSelect.value = 'custom';
+                }
+            }
+        }
+    }
+
     if (zoomInBtn) {
         zoomInBtn.addEventListener('click', () => {
-            currentZoom = Math.min(maxZoom, currentZoom + zoomStep);
-            updateZoom();
+            zoomMode = 'custom';
+            currentZoom = Math.min(maxZoom, Math.round((currentZoom + zoomStep) * 100) / 100);
+            updateZoomUI();
         });
     }
 
     if (zoomOutBtn) {
         zoomOutBtn.addEventListener('click', () => {
-            currentZoom = Math.max(minZoom, currentZoom - zoomStep);
-            updateZoom();
+            zoomMode = 'custom';
+            currentZoom = Math.max(minZoom, Math.round((currentZoom - zoomStep) * 100) / 100);
+            updateZoomUI();
         });
     }
+
+    if (zoomPresetSelect) {
+        zoomPresetSelect.addEventListener('change', () => {
+            const val = zoomPresetSelect.value;
+            if (val === 'fit-width' || val === 'fit-page') {
+                applyZoom(val);
+            } else {
+                const num = parseFloat(val);
+                if (!isNaN(num)) {
+                    applyZoom('custom', num);
+                }
+            }
+        });
+    }
+
+    window.addEventListener('resize', () => {
+        if (zoomMode === 'fit-width' || zoomMode === 'fit-page') {
+            applyZoom();
+        }
+    });
 
     if (exportHtmlBtn) {
         exportHtmlBtn.addEventListener('click', () => {
@@ -80,39 +181,26 @@ interface ElementData {
         });
     }
 
-    function updateZoom(): void {
-        if (canvas) {
-            canvas.style.transform = `scale(${currentZoom})`;
-        }
-        if (zoomLevelSpan) {
-            zoomLevelSpan.textContent = `${Math.round(currentZoom * 100)}%`;
-        }
-    }
-
-    // Add keyboard shortcuts
     document.addEventListener('keydown', (e: KeyboardEvent) => {
-        // Ctrl/Cmd + Plus: Zoom in
         if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '=')) {
             e.preventDefault();
-            currentZoom = Math.min(maxZoom, currentZoom + zoomStep);
-            updateZoom();
-        }
-        
-        // Ctrl/Cmd + Minus: Zoom out
-        if ((e.ctrlKey || e.metaKey) && e.key === '-') {
-            e.preventDefault();
-            currentZoom = Math.max(minZoom, currentZoom - zoomStep);
-            updateZoom();
-        }
-        
-        // Ctrl/Cmd + 0: Reset zoom
-        if ((e.ctrlKey || e.metaKey) && e.key === '0') {
-            e.preventDefault();
-            currentZoom = 1.0;
-            updateZoom();
+            zoomMode = 'custom';
+            currentZoom = Math.min(maxZoom, Math.round((currentZoom + zoomStep) * 100) / 100);
+            updateZoomUI();
         }
 
-        // Escape: Close properties panel
+        if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+            e.preventDefault();
+            zoomMode = 'custom';
+            currentZoom = Math.max(minZoom, Math.round((currentZoom - zoomStep) * 100) / 100);
+            updateZoomUI();
+        }
+
+        if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+            e.preventDefault();
+            applyZoom('fit-width');
+        }
+
         if (e.key === 'Escape') {
             propertiesPanel.classList.remove('visible');
             if (selectedElement) {
@@ -122,43 +210,80 @@ interface ElementData {
         }
     });
 
-    // Add click handlers for elements
+    function selectElement(element: HTMLElement, scrollIntoView = false): void {
+        if (selectedElement) {
+            selectedElement.classList.remove('selected');
+        }
+
+        element.classList.add('selected');
+        selectedElement = element;
+
+        if (scrollIntoView) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+        }
+
+        const elementData = element.getAttribute('data-element');
+        if (elementData) {
+            try {
+                const data = JSON.parse(elementData.replace(/&apos;/g, "'")) as ElementData;
+                currentElementData = data;
+                showElementProperties(data);
+                propertiesPanel.classList.add('visible');
+
+                vscode.postMessage({
+                    command: 'elementSelected',
+                    elementId: data.id || element.id,
+                    elementData: data
+                });
+            } catch (error) {
+                console.error('Error parsing element data:', error);
+            }
+        }
+    }
+
     const elements = document.querySelectorAll('.element.clickable') as NodeListOf<HTMLElement>;
     elements.forEach(element => {
         element.addEventListener('click', (e: MouseEvent) => {
             e.stopPropagation();
-            
-            // Remove previous selection
-            if (selectedElement) {
-                selectedElement.classList.remove('selected');
-            }
-            
-            // Add selection to clicked element
-            element.classList.add('selected');
-            selectedElement = element;
-            
-            // Get element data
-            const elementData = element.getAttribute('data-element');
-            if (elementData) {
-                try {
-                    const data = JSON.parse(elementData.replace(/&apos;/g, "'")) as ElementData;
-                    currentElementData = data;
-                    showElementProperties(data);
-                    propertiesPanel.classList.add('visible');
-                } catch (error) {
-                    console.error('Error parsing element data:', error);
-                }
-            }
+            selectElement(element, false);
         });
     });
 
-    // Click outside to deselect
     document.addEventListener('click', (e: MouseEvent) => {
         if (!e.target || !(e.target as HTMLElement).closest('.element') && !(e.target as HTMLElement).closest('.properties-panel')) {
             if (selectedElement) {
                 selectedElement.classList.remove('selected');
                 selectedElement = null;
                 currentElementData = null;
+            }
+        }
+    });
+
+    window.addEventListener('message', (event: MessageEvent) => {
+        const message = event.data;
+        if (!message) {
+            return;
+        }
+
+        switch (message.command) {
+            case 'selectElement': {
+                const targetId = message.elementId;
+                if (!targetId) {
+                    return;
+                }
+                const targetEl = document.getElementById(targetId) || document.querySelector(`[data-element-id="${targetId}"]`) as HTMLElement;
+                if (targetEl) {
+                    selectElement(targetEl, true);
+                }
+                break;
+            }
+            case 'setZoom': {
+                if (message.mode === 'fit-width' || message.mode === 'fit-page') {
+                    applyZoom(message.mode);
+                } else if (typeof message.value === 'number') {
+                    applyZoom('custom', message.value);
+                }
+                break;
             }
         }
     });
@@ -214,7 +339,6 @@ interface ElementData {
         </div>`;
         html += '</div>';
 
-        // Position & Size (editable)
         html += '<div class="property-group">';
         html += '<h4>Position & Size</h4>';
         html += createEditableField('X', data.x, 'x', 'number');
@@ -223,7 +347,6 @@ interface ElementData {
         html += createEditableField('Height', data.height, 'height', 'number');
         html += '</div>';
 
-        // Content section (editable)
         if (data.type === 'staticText' || data.type === 'textField') {
             html += '<div class="property-group">';
             html += '<h4>Content</h4>';
@@ -245,7 +368,6 @@ interface ElementData {
             html += '</div>';
         }
 
-        // Font section (editable)
         if (data.type === 'staticText' || data.type === 'textField') {
             html += '<div class="property-group">';
             html += '<h4>Font</h4>';
@@ -255,7 +377,6 @@ interface ElementData {
             html += '</div>';
         }
 
-        // Appearance section (editable)
         html += '<div class="property-group">';
         html += '<h4>Appearance</h4>';
         html += createEditableField('Forecolor', data.forecolor, 'forecolor', 'color');
@@ -263,38 +384,32 @@ interface ElementData {
         html += createSelectField('Mode', data.mode, 'mode', ['Opaque', 'Transparent']);
         html += '</div>';
 
-        // Save button
         html += '<div class="property-actions">';
         html += '<button id="saveProperties" class="save-btn">💾 Save Changes</button>';
         html += '</div>';
 
         propertiesContent.innerHTML = html;
 
-        // Add event listeners for property changes
         setupPropertyListeners();
     }
 
     function setupPropertyListeners(): void {
-        // Input fields
         const inputs = propertiesContent.querySelectorAll('.property-input') as NodeListOf<HTMLInputElement>;
         inputs.forEach(input => {
             input.addEventListener('change', handlePropertyChange);
             input.addEventListener('input', handlePropertyPreview);
         });
 
-        // Select fields
         const selects = propertiesContent.querySelectorAll('.property-select') as NodeListOf<HTMLSelectElement>;
         selects.forEach(select => {
             select.addEventListener('change', handlePropertyChange);
         });
 
-        // Checkbox fields
         const checkboxes = propertiesContent.querySelectorAll('.property-checkbox') as NodeListOf<HTMLInputElement>;
         checkboxes.forEach(checkbox => {
             checkbox.addEventListener('change', handlePropertyChange);
         });
 
-        // Save button
         const saveBtn = document.getElementById('saveProperties');
         if (saveBtn) {
             saveBtn.addEventListener('click', saveAllProperties);
@@ -304,33 +419,33 @@ interface ElementData {
     function handlePropertyChange(e: Event): void {
         const target = e.target as HTMLInputElement | HTMLSelectElement;
         const property = target.dataset.property;
-        if (!property || !currentElementData) return;
+        if (!property || !currentElementData) {
+            return;
+        }
 
         let value: string | number | boolean;
         
         if (target.type === 'checkbox') {
             value = (target as HTMLInputElement).checked;
         } else if (target.type === 'number') {
-            value = parseInt(target.value) || 0;
+            value = parseInt(target.value, 10) || 0;
         } else {
             value = target.value;
         }
 
-        // Update local data
         (currentElementData as any)[property] = value;
-
-        // Update visual preview immediately
         updateElementVisual(property, value);
     }
 
     function handlePropertyPreview(e: Event): void {
         const target = e.target as HTMLInputElement;
         const property = target.dataset.property;
-        if (!property || !selectedElement) return;
+        if (!property || !selectedElement) {
+            return;
+        }
 
-        // Live preview for position and size
         if (['x', 'y', 'width', 'height'].includes(property)) {
-            const value = parseInt(target.value) || 0;
+            const value = parseInt(target.value, 10) || 0;
             switch (property) {
                 case 'x':
                     selectedElement.style.left = `${value}px`;
@@ -349,7 +464,9 @@ interface ElementData {
     }
 
     function updateElementVisual(property: string, value: string | number | boolean): void {
-        if (!selectedElement) return;
+        if (!selectedElement) {
+            return;
+        }
 
         switch (property) {
             case 'x':
@@ -388,7 +505,6 @@ interface ElementData {
                 break;
         }
 
-        // Update the data attribute
         if (currentElementData) {
             selectedElement.setAttribute('data-element', JSON.stringify(currentElementData).replace(/'/g, '&apos;'));
         }
@@ -400,13 +516,11 @@ interface ElementData {
             return;
         }
 
-        // Send update to VS Code
         vscode.postMessage({
             command: 'updateElement',
             elementData: currentElementData
         });
     }
 
-    // Initialize
-    updateZoom();
+    applyZoom('fit-width');
 })();
