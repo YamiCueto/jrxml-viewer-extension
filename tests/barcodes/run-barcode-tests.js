@@ -71,6 +71,41 @@ runTest('Test 4: Code 39 deterministic pattern encoding', () => {
     assert.strictEqual(encoded.valid, true);
     assert.strictEqual(encoded.pattern.startsWith('bwbwBwBwbw'), true, 'Starts with asterisk guard');
     assert.strictEqual(encoded.pattern.endsWith('bwbwBwBwbw'), true, 'Ends with asterisk guard');
+
+    const specialChars = [
+        { char: '$', expected: 'bWbWbWbwb' },
+        { char: '/', expected: 'bWbWbwbWb' },
+        { char: '+', expected: 'bWbwbWbWb' },
+        { char: '%', expected: 'bwbWbWbWb' }
+    ];
+
+    for (const sc of specialChars) {
+        const res = encodeCode39(sc.char);
+        assert.strictEqual(res.valid, true);
+        assert.ok(res.pattern.includes(sc.expected), `Pattern for ${sc.char} must include ${sc.expected}`);
+
+        const innerPattern = res.pattern.substring(10, res.pattern.length - 10 - 1);
+        assert.strictEqual(innerPattern, sc.expected);
+
+        const wideCount = (innerPattern.match(/[BW]/g) || []).length;
+        assert.strictEqual(wideCount, 3, `Character ${sc.char} must have exactly 3 wide elements`);
+    }
+
+    const complexText = '$100.00/DAY+10%';
+    const complexEncoded = encodeCode39(complexText);
+    assert.strictEqual(complexEncoded.valid, true);
+    assert.strictEqual(complexEncoded.pattern.length, (complexText.length + 2) * 10);
+
+    const complexSvg = renderBarcodeSvg({
+        barcodeType: 'Code39',
+        value: complexText,
+        width: 250,
+        height: 60,
+        drawText: true
+    });
+    assert.ok(complexSvg.includes('<svg'), 'SVG must be generated');
+    assert.ok(complexSvg.includes('<rect'), 'SVG rect elements must be present');
+    assert.ok(complexSvg.includes(complexText), 'SVG text must match');
 });
 
 runTest('Test 5: Safe handling of null or empty payload', () => {

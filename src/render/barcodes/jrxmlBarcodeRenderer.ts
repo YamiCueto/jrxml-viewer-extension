@@ -210,8 +210,8 @@ export function encodeCode39(text: string): { pattern: string; valid: boolean } 
         'K': 'BwbwbwbwB', 'L': 'bwBwbwbwB', 'M': 'BwBwbwbwb', 'N': 'bwbwBwbwB', 'O': 'BwbwBwbwb',
         'P': 'bwBwBwbwb', 'Q': 'bwbwbwBwB', 'R': 'BwbwbwBwb', 'S': 'bwBwbwBwb', 'T': 'bwbwBwBwb',
         'U': 'BwBwbwbwb', 'V': 'bwBwBwbwb', 'W': 'BwBwBwbwb', 'X': 'bwbwBwBwb', 'Y': 'BwbwBwBwb',
-        'Z': 'bwBwBwBwb', '-': 'bwbwbwBwB', '.': 'BwbwbwBwb', ' ': 'bwBwbwBwb', '$': 'bwbwbwbwb',
-        '/': 'bwbwbwbwb', '+': 'bwbwbwbwb', '%': 'bwbwbwbwb', '*': 'bwbwBwBwb'
+        'Z': 'bwBwBwBwb', '-': 'bwbwbwBwB', '.': 'BwbwbwBwb', ' ': 'bwBwbwBwb', '$': 'bWbWbWbwb',
+        '/': 'bWbWbwbWb', '+': 'bWbwbWbWb', '%': 'bwbWbWbWb', '*': 'bwbwBwBwb'
     };
 
     const clean = text.toUpperCase().replace(/[^0-9A-Z\-\. \$\/\+\%]/g, '');
