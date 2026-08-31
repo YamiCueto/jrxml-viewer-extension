@@ -11,6 +11,7 @@ import { JrxmlElementPatch } from './editing/jrxmlEditingModel';
 import { JrxmlElementsProvider } from './jrxmlElementsProvider';
 import { JrxmlPropertiesProvider } from './jrxmlPropertiesProvider';
 import { outputChannel } from './extension';
+import { generateStandaloneHtml } from './export/jrxmlHtmlExporter';
 
 export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider {
     private static readonly viewType = 'jrxml-viewer.editor';
@@ -338,7 +339,7 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
         }
 
         try {
-            const htmlContent = this.generateStandaloneHtml(layout, doc);
+            const htmlContent = generateStandaloneHtml(layout, doc);
             const defaultExportUri = vscode.Uri.file(sourceUri.fsPath.replace(/\.jrxml$/i, '_export.html'));
 
             const saveUri = await vscode.window.showSaveDialog({
@@ -356,35 +357,6 @@ export class JrxmlEditorProvider implements vscode.CustomReadonlyEditorProvider 
         } catch (error) {
             vscode.window.showErrorMessage(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
-    }
-
-    private generateStandaloneHtml(layout: LayoutResult, doc: JrxmlDocument): string {
-        const renderedPagesHtml = renderLayoutDocument(layout);
-        return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${doc.report.name} — Standalone Preview</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 20px;
-            background-color: #1e1e1e;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            display: flex;
-            justify-content: center;
-        }
-        .jrxml-page {
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
-        }
-    </style>
-</head>
-<body>
-    ${renderedPagesHtml}
-</body>
-</html>`;
     }
 
     private getNonce(): string {
